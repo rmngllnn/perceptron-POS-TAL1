@@ -8,10 +8,11 @@
 # https://www.guru99.com/pos-tagging-chunking-nltk.html
 # https://becominghuman.ai/part-of-speech-tagging-tutorial-with-the-keras-deep-learning-library-d7f93fa05537 (list of features)
 
+import random
 
-
-def create_word_vector(sentence, word, index): #hypothesis: word, word before, word after, pre- and suffixes with len from 1 to 3, are enough to determine POS tagging
+def get_word_vector(sentence, word, index): #hypothesis: word, word before, word after, pre- and suffixes with len from 1 to 3, are enough to determine POS tagging
 	vector = {}
+
 	if index == 0:
 		vector["is_first"] = 1
 	if index == len(sentence) -1:
@@ -29,7 +30,7 @@ def create_word_vector(sentence, word, index): #hypothesis: word, word before, w
 	vector["word="+word] = 1
 
 	word_plus_1 = ""
-	if index > len(sentence) - 1:
+	if index < len(sentence) - 1:
 		word_plus_1 = sentence[index+1]
 	vector["word-1="+word_plus_1] = 1
 
@@ -74,58 +75,97 @@ def predict_tag(vector, weights, tagset):
 		scores[tag] = 0
 		for feature in weights:
 			if feature in vector:
-				scores[tag] += weights[feature][tag] * vector[feature]
+				scores[tag] += weights[feature].get(tag,0) * vector[feature]
 	return max(scores, key=lambda tag: (scores[tag], tag))
 
 
 
-def add_vector_to_weight(vector, weights, tag, factor):
+def add_vector_to_weights(vector, weights, tag, factor):
 	for feature in vector:
-		weights[feature][tag] = weights[feature].get(tag, 0) + vector[feature]*factor
+		weights[feature] = weights.get(feature, {})
+		weights[feature][tag] = (weights[feature]).get(tag, 0) + vector[feature]*factor
 
 
 
-def add_weight_to_average(average, weight):
-	for feature in weight:
-		for tag in weight[feature]:
-			average[feature][tag] = average[feature].get(tag, 0) + weight[feature][tag]
+def add_weights_to_average(average, weights):
+	for feature in weights:
+		for tag in weights[feature]:
+			average[feature] = average.get(feature, {})
+			average[feature][tag] = average[feature].get(tag, 0) + weights[feature][tag]
 
 
 
-def train(corpus, tagset, MAX_EPOCH = 100):
-	#RAF formatting of training corpus
+def train(vectors_corpus, tagset, MAX_EPOCH = 1):
 	average = {}
+
 	for epoch in range(0, MAX_EPOCH):
-		weight = {}
-		#shuffle corpus
-		for word in corpus:
-			predicted = predict_tag(vector, index, tagset)
-			if predicted != gold:
-				add_vector_to_weight(vector, weight, predicted, -1)
-				add_vector_to_weight(vector, weight, gold, +1)
-			add_weight_to_average(average, weight)
+		print("epoch: "+str(epoch))
+		weights = {}
+		random.shuffle(vectors_corpus)
+		index_word = 0
+		n_words = len(vectors_corpus)
+		for word in vectors_corpus:
+			print("epoch "+str(epoch)+"/"+str(MAX_EPOCH)+": "+str(index_word)+"/"+str(n_words)+" words") #TBD
+			index_word += 1
+			predicted_tag = predict_tag(word[0], weights, tagset)
+			gold_tag = word[1]
+			if predicted_tag != gold_tag:
+				add_vector_to_weights(word[0], weights, predicted_tag, -1)
+				add_vector_to_weights(word[0], weights, gold_tag, +1)
+			add_weights_to_average(average, weights)
+	print(average) # TBD
 	return average
 
 
 
-def get_data(file = "./fr_gsd-ud-dev.conllu"):
-    data = []
-    with open(file, "r") as raw:
-        for line in raw.readlines():
-            #RAFFFFF
-    return data
+def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
+	data = [] # list of lists (sentences) of dictionaries (words)
 
+	with open(file, "r") as raw_file:
+		raw_content = raw_file.read()
+		sentences = raw_content.split("\n\n")
+		for sentence in sentences:
+			sentence_data = []
+			for line in sentence.split("\n"):
+				if line != "" and line[0] != "#":
+					tabs = line.split("\t")
+					if tabs[3] != "_":
+						to_append = {}
+						to_append["index"] = int(tabs[0])
+						to_append["word"] = tabs[1]
+						to_append["gold_POS"] = tabs[3]
+						sentence_data.append(to_append)
+			data.append(sentence_data)
+	return data
+
+
+def get_vectors_from_data(data): # vectors: list of tuples, with (word vector, gold POS tag)
+	vectors = []
+	for sentence_data in data:
+		sentence = []
+		for word_data in sentence_data:
+			sentence.append(word_data["word"])
+		for word_data in sentence_data:
+			word_vector = get_word_vector(sentence, word_data["word"], word_data["index"])
+			to_append = (word_vector, word_data["gold_POS"])
+			vectors.append(to_append)
+	return vectors
 
 
 if "__main__" == __name__:
-	train_set = get_data("./fr_gsd-ud-train.conllu")
-	dev_set = get_data("./fr_gsd-ud-dev.conllu")
-	test_set = get_data("./fr_gsd-ud-test.conllu")
+	#train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
+	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
+	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
+
+	#train_vectors = get_vectors_from_data(train_data)
+	dev_vectors = get_vectors_from_data(dev_data)
+	#test_vectors = get_vectors_from_data(test_data)
+	
 
 	tagset = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
-	#weigths = {} #donc que des 0 
-	#weights = train(train_set, tagset) #weights[feature][tag]
+	weigths = {} #donc que des 0 
+	weights = train(dev_vectors, tagset) #weights[feature][tag]
 
-	#RAF validation with MAX_EPOCH
-	#RAF evaluation
+	#RAF validation with MAX_EPOCH and dev_vectors
+	#RAF evaluation with test_vectors
