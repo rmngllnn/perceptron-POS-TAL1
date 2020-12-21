@@ -216,7 +216,7 @@ if "__main__" == __name__:
 	
 	"""Training"""
 	weigths = {} #donc que des 0 
-	weights = train(dev_vectors, tagset, 3, 5000) #weights[feature][tag]
+	weights = train(dev_vectors, tagset, MAX_EPOCH=3, MAX_CORPUS=5000) #weights[feature][tag]
 	
 	print(int(time.time()-start_time), " secondes")
 
