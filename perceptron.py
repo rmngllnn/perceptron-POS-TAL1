@@ -23,24 +23,24 @@ def get_word_vector(sentence, word, index):
 
 	if index == 0:
 		vector["is_first"] = 1
+	else:
+		word_minus_1 = sentence[index-1]
+		vector["word-1="+word_minus_1] = 1
+
 	if index == len(sentence) -1:
 		vector["is_last"] = 1
+	else:
+		word_plus_1 = sentence[index+1]
+		vector["word-1="+word_plus_1] = 1
+		
 	if word[0].upper() == word[0]:
 		vector["is_capitalized"] = 1
 	if word.upper() == word:
 		vector["is_uppercase"] = 1
 
-	word_minus_1 = ""
-	if index != 0:
-		word_minus_1 = sentence[index-1]
-	vector["word-1="+word_minus_1] = 1
 
 	vector["word="+word] = 1
 
-	word_plus_1 = ""
-	if index < len(sentence) - 1:
-		word_plus_1 = sentence[index+1]
-	vector["word-1="+word_plus_1] = 1
 
 	#To do : determine if "", then still a feature, or if then = 0
 	prefix_1 = ""
