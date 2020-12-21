@@ -131,7 +131,7 @@ def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
 	   return : list de dictionnaires 
        (exemple pour une phrase : 
 		[{index du mot dans la phrase : 1, mot : mot1, gold_pos : ADV}, 
-         {index du mot dans la phrase 2, mot : mot2, gold_pos : DET}, etc."""
+         {index du mot dans la phrase 2, mot : mot2, gold_pos : DET}], etc."""
 	
 	data = [] # list of lists (sentences) of dictionaries (words)
 
