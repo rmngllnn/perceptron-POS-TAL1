@@ -31,7 +31,7 @@ def get_word_vector(sentence, word, index):
 		vector["is_last"] = 1
 	else:
 		word_plus_1 = sentence[index+1]
-		vector["word-1="+word_plus_1] = 1
+		vector["word+1="+word_plus_1] = 1
 		
 	if word[0].upper() == word[0]:
 		vector["is_capitalized"] = 1
