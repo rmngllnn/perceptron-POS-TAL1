@@ -70,17 +70,17 @@ def get_word_vector(sentence, word, index):
 
 	suffix_1 = ""
 	if len_word > 0:
-		suffix_1 = word[0:1]
+		suffix_1 = word[-1::]
 	vector["suffix1="+suffix_1] = 1
 
 	suffix_2 = ""
 	if len_word > 1:
-		suffix_2 = word[0:2]
+		suffix_2 = word[-2::]
 	vector["suffix2="+suffix_2] = 1
 
 	suffix_3 = ""
 	if len_word > 2:
-		suffix_3 = word[0:3]
+		suffix_3 = word[-3::]
 	vector["suffix3="+suffix_3] = 1
 	
 	#print(vector)
