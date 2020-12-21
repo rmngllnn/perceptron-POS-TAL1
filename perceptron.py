@@ -13,7 +13,7 @@ import time
 
 def get_word_vector(sentence, word, index):
 	"""Calculates the features of a given word, returns that vector.
-	Hypothesis: word, word before, word after, pre- and suffixes with len from 1 to 3, are enough to determine POS tagging. RAF
+	Features: word, word before, word after, pre- and suffixes with len from 1 to 3 (if they exist), len = 1 or 2 or 3 or more RAF
 	sentence: list of Strings (words), the original sentence.
 	word: String, the word.
 	index: index of word in the sentence. Taken from the corpus, so index of sentence[0] is 1.
