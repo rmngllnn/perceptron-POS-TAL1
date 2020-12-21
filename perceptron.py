@@ -16,13 +16,13 @@ def get_word_vector(sentence, word, index):
 	Hypothesis: word, word before, word after, pre- and suffixes with len from 1 to 3, are enough to determine POS tagging. RAF
 	sentence: list of Strings (words), the original sentence.
 	word: String, the word.
-	index: index of word in the sentence.
+	index: index of word in the sentence. Taken from the corpus, so index of sentence[0] is 1.
 	"""
 	
 	vector = {}
 	len_word = len(word)
 	len_sentence = len(sentence)
-	index -= 1
+	index -= 1 #to get the index in the list
 
 	vector["word="+word] = 1
 
@@ -41,35 +41,45 @@ def get_word_vector(sentence, word, index):
 	if word.upper() == word:
 		vector["is_uppercase"] = 1
 
+	if len_word == 1:
+		vector["len=1"] = 1
+	elif len_word == 2:
+		vector["len=2"] = 1
+	elif len_word == 3:
+		vector["len=3"] = 1
+	else:
+		vector["len>3"] = 1
+	
+		
 
 	#To do : determine if "", then still a feature, or if then = 0
 	prefix_1 = ""
-	if len(word) > 0:
+	if len_word > 0:
 		prefix_1 = word[0:1]
 	vector["prefix1="+prefix_1] = 1
 
 	prefix_2 = ""
-	if len(word) > 1:
+	if len_word > 1:
 		prefix_1 = word[0:2]
 	vector["prefix2="+prefix_2] = 1
 
 	prefix_3 = ""
-	if len(word) > 2:
+	if len_word > 2:
 		prefix_3 = word[0:3]
 	vector["prefix3="+prefix_3] = 1
 
 	suffix_1 = ""
-	if len(word) > 0:
+	if len_word > 0:
 		suffix_1 = word[0:1]
 	vector["suffix1="+suffix_1] = 1
 
 	suffix_2 = ""
-	if len(word) > 1:
+	if len_word > 1:
 		suffix_2 = word[0:2]
 	vector["suffix2="+suffix_2] = 1
 
 	suffix_3 = ""
-	if len(word) > 2:
+	if len_word > 2:
 		suffix_3 = word[0:3]
 	vector["suffix3="+suffix_3] = 1
 	
