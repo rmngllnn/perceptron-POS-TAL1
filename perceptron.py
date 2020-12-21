@@ -50,7 +50,7 @@ def get_word_vector(sentence, word, index):
 	else:
 		vector["len>3"] = 1
 	
-		
+	"""
 	if len_word > 0:
 		vector["prefix1="+word[0:1]] = 1
 
@@ -68,7 +68,7 @@ def get_word_vector(sentence, word, index):
 
 	if len_word > 2:
 		vector["suffix3="+word[-3::]] = 1
-	
+	"""
 	#print(vector)
 
 	return vector
@@ -122,13 +122,15 @@ def add_weights_to_average(average, weights):
 
 
 
-def train(vectors_corpus, tagset, MAX_EPOCH = 1):
+def train(vectors_corpus, tagset, MAX_EPOCH = 3, MAX_CORPUS = 0):
 	"""Creates and return the weights to score each tags and predict the best one. Weights are averaged by adding each temporary value of them to each other.
 	vector_corpus: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data
 	tagset: list of potential tags
 	MAX_EPOCH: super parameter, yet to be set, number of times the algorithm goes through the whole corpus
 	"""
 	average = {}
+	if MAX_CORPUS == 0:
+		MAX_CORPUS = len(vectors_corpus)
 
 	for epoch in range(0, MAX_EPOCH):
 		print("epoch: "+str(epoch))
@@ -136,15 +138,17 @@ def train(vectors_corpus, tagset, MAX_EPOCH = 1):
 		random.shuffle(vectors_corpus)
 		index_word = 0
 		n_words = len(vectors_corpus)
-		for word in vectors_corpus:
-			#print("epoch "+str(epoch)+"/"+str(MAX_EPOCH)+": "+str(index_word)+"/"+str(n_words)+" words") #TBD
+		for word_index in range(0, MAX_CORPUS):
+		#for word in vectors_corpus:
+			word = vectors_corpus[word_index]
+			print("epoch "+str(epoch)+"/"+str(MAX_EPOCH)+": "+str(index_word)+"/"+str(n_words)+" words") #TBD
 			index_word += 1
 			predicted_tag = predict_tag(word[0], weights, tagset)
 			gold_tag = word[1]
 			if predicted_tag != gold_tag:
 				add_vector_to_weights(word[0], weights, predicted_tag, -1)
 				add_vector_to_weights(word[0], weights, gold_tag, +1)
-		add_weights_to_average(average, weights) #RAF cette ligne dans la boucle for (comme dans le pseudo-code du prof) ou non ??
+		add_weights_to_average(average, weights)
 	#print(average) # TBD
 	return average
 
@@ -212,7 +216,7 @@ if "__main__" == __name__:
 	
 	"""Training"""
 	weigths = {} #donc que des 0 
-	weights = train(dev_vectors, tagset) #weights[feature][tag]
+	weights = train(dev_vectors, tagset, 3, 5000) #weights[feature][tag]
 	
 	print(int(time.time()-start_time), " secondes")
 
