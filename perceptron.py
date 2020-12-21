@@ -144,7 +144,7 @@ def train(vectors_corpus, tagset, MAX_EPOCH = 1):
 			if predicted_tag != gold_tag:
 				add_vector_to_weights(word[0], weights, predicted_tag, -1)
 				add_vector_to_weights(word[0], weights, gold_tag, +1)
-		add_weights_to_average(average, weights)
+		add_weights_to_average(average, weights) #RAF cette ligne dans la boucle for (comme dans le pseudo-code du prof) ou non ??
 	#print(average) # TBD
 	return average
 
