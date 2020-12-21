@@ -50,7 +50,7 @@ def get_word_vector(sentence, word, index):
 	else:
 		vector["len>3"] = 1
 	
-	"""
+
 	if len_word > 0:
 		vector["prefix1="+word[0:1]] = 1
 
@@ -68,7 +68,7 @@ def get_word_vector(sentence, word, index):
 
 	if len_word > 2:
 		vector["suffix3="+word[-3::]] = 1
-	"""
+
 	#print(vector)
 
 	return vector
@@ -220,7 +220,7 @@ def evaluate(weights, test_set, tagset, MAX_CORPUS = 0):
 		if predicted_tag == gold_tag:
 			good += 1
 
-	print("Good answers: "+str(good)+"/"+str(len(MAX_CORPUS)))
+	print("Good answers: "+str(good)+"/"+str(MAX_CORPUS))
 	return good
 
 
@@ -234,25 +234,19 @@ if "__main__" == __name__:
 	start_time = time.time()
 	tagset = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
-	"""Data extraction"""
-	#print("data extraction")
-	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
-	#dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
-	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
-
-	"""Data formatting"""
-	#print("data formatting")
-	train_vectors = get_vectors_from_data(train_data)
-	#dev_vectors = get_vectors_from_data(dev_data)
-	#test_vectors = get_vectors_from_data(test_data)
-	
 	"""Training"""
-	#print("training")
+	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
+	train_vectors = get_vectors_from_data(train_data)
 	weights = train(train_vectors, tagset, MAX_EPOCH=3, MAX_CORPUS=5000)
+	evaluate(weights, train_vectors, tagset, MAX_CORPUS= 5000)
+
+	"""MAX_EPOCH"""
+	#dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
+	#dev_vectors = get_vectors_from_data(dev_data)
 
 	"""Evaluation"""
-	#print("evaluation")
-	evaluate(weights, train_vectors, tagset, MAX_CORPUS= 5000)
+	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
+	#test_vectors = get_vectors_from_data(test_data)
 
 	"""Time evaluation"""
 	print("Took "+str(int(time.time()-start_time))+" secondes")
