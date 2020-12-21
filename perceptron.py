@@ -78,30 +78,36 @@ def predict_tag(vector, weights, tagset):
 	for tag in tagset:
 		scores[tag] = 0
 		for feature in weights:
+			weights_feature = weights[feature]
 			if feature in vector:
-				scores[tag] += weights[feature].get(tag,0) * vector[feature]
+				scores[tag] += weights_feature.get(tag,0) * vector[feature]
 	return max(scores, key=lambda tag: (scores[tag], tag))
 
 
 
 def add_vector_to_weights(vector, weights, tag, factor):
 	for feature in vector:
-		weights[feature] = weights.get(feature, {})
-		weights[feature][tag] = (weights[feature]).get(tag, 0) + vector[feature]*factor
+		if feature not in weights:
+			weights[feature] = {}
+		weights_feature = weights[feature]
+		weights_feature[tag] = weights_feature.get(tag, 0) + vector[feature]*factor
 
 
 
 def add_weights_to_average(average, weights):
 	for feature in weights:
+		weights_feature = weights[feature]
 		for tag in weights[feature]:
-			average[feature] = average.get(feature, {})
-			average[feature][tag] = average[feature].get(tag, 0) + weights[feature][tag]
+			if feature not in average:
+				average[feature] = {}
+			average_feature = average[feature]
+			average_feature[tag] = average_feature.get(tag, 0) + weights_feature[tag]
 
 
 
 def train(vectors_corpus, tagset, MAX_EPOCH = 1):
 	
-	"""création du dictionnaire train
+	"""creation of the weights to score the tags when predicting the best one, 
 	"""
 	average = {}
 
@@ -119,7 +125,7 @@ def train(vectors_corpus, tagset, MAX_EPOCH = 1):
 			if predicted_tag != gold_tag:
 				add_vector_to_weights(word[0], weights, predicted_tag, -1)
 				add_vector_to_weights(word[0], weights, gold_tag, +1)
-			add_weights_to_average(average, weights)
+		add_weights_to_average(average, weights)
 	#print(average) # TBD
 	return average
 
