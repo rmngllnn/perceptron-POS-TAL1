@@ -60,7 +60,7 @@ def get_word_vector(sentence, word, index):
 
 	prefix_2 = ""
 	if len_word > 1:
-		prefix_1 = word[0:2]
+		prefix_2 = word[0:2]
 	vector["prefix2="+prefix_2] = 1
 
 	prefix_3 = ""
