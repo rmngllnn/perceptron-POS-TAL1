@@ -11,8 +11,14 @@
 import random
 import time
 
-def get_word_vector(sentence, word, index): 
-	#hypothesis: word, word before, word after, pre- and suffixes with len from 1 to 3, are enough to determine POS tagging
+def get_word_vector(sentence, word, index):
+	"""Calculates the features of a given word, returns that vector.
+	Hypothesis: word, word before, word after, pre- and suffixes with len from 1 to 3, are enough to determine POS tagging. RAF
+	sentence: list of Strings (words), the original sentence.
+	word: String, the word.
+	index: index of word in the sentence.
+	"""
+	
 	vector = {}
 
 	if index == 0:
@@ -74,6 +80,12 @@ def get_word_vector(sentence, word, index):
 
 
 def predict_tag(vector, weights, tagset):
+	"""Predicts and returns the tag of a word.
+	vector: features of the word, as calculated/formatted by get_word_vector
+	weights: the weights for each feature in the prediction
+	tagset: possible tags
+	"""
+	
 	scores = {}
 	for tag in tagset:
 		scores[tag] = 0
@@ -86,6 +98,13 @@ def predict_tag(vector, weights, tagset):
 
 
 def add_vector_to_weights(vector, weights, tag, factor):
+	"""Adds or substract (for factor = 1 and -1) a vector to a set of weights. Auxiliary fonction for train.
+	vector: word vector, as calculated/formatted by get_word_vector()
+	weights: the weights for each feature in the prediction
+	tag: the tag that needs to be reevaluated
+	factor: which way the tag needs to be reevaluated, here, 1 or -1
+	"""
+
 	for feature in vector:
 		if feature not in weights:
 			weights[feature] = {}
@@ -95,6 +114,10 @@ def add_vector_to_weights(vector, weights, tag, factor):
 
 
 def add_weights_to_average(average, weights):
+	"""Auxiliary fonction of train, adds the calculated weights to the average, to smooth variations out and allow for reaching a limit.
+	average: the current average
+	weights: the calculated weights to be added
+	"""
 	for feature in weights:
 		weights_feature = weights[feature]
 		for tag in weights[feature]:
