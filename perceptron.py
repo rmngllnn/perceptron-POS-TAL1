@@ -18,7 +18,6 @@ def get_word_vector(sentence, word, index):
 	word: String, the word.
 	index: index of word in the sentence. Taken from the corpus, so index of sentence[0] is 1.
 	"""
-	
 	vector = {}
 	len_word = len(word)
 	len_sentence = len(sentence)
@@ -35,11 +34,12 @@ def get_word_vector(sentence, word, index):
 		vector["is_last"] = 1
 	else:
 		vector["word+1="+sentence[index+1]] = 1
-		
-	if word[0].upper() == word[0]:
+
+	if word[0].isupper():
 		vector["is_capitalized"] = 1
-	if word.upper() == word:
-		vector["is_uppercase"] = 1
+        
+	if word.isupper():
+        	vector["is_uppercase"] = 1
 
 	if len_word == 1:
 		vector["len=1"] = 1
@@ -81,7 +81,6 @@ def predict_tag(vector, weights, tagset):
 	weights: the weights for each feature in the prediction
 	tagset: possible tags
 	"""
-	
 	scores = {}
 	for tag in tagset:
 		scores[tag] = 0
@@ -100,7 +99,6 @@ def add_vector_to_weights(vector, weights, tag, factor):
 	tag: the tag that needs to be reevaluated
 	factor: which way the tag needs to be reevaluated, here, 1 or -1
 	"""
-
 	for feature in vector:
 		if feature not in weights:
 			weights[feature] = {}
@@ -125,8 +123,10 @@ def add_weights_to_average(average, weights):
 
 
 def train(vectors_corpus, tagset, MAX_EPOCH = 1):
-	
-	"""creation of the weights to score the tags when predicting the best one, 
+	"""Creates and return the weights to score each tags and predict the best one. Weights are averaged by adding each temporary value of them to each other.
+	vector_corpus: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data
+	tagset: list of potential tags
+	MAX_EPOCH: super parameter, yet to be set, number of times the algorithm goes through the whole corpus
 	"""
 	average = {}
 
@@ -151,14 +151,13 @@ def train(vectors_corpus, tagset, MAX_EPOCH = 1):
 
 
 def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
-	
-	"""extraction des données à partir des fichiers conllu
-	   return : list de dictionnaires 
-       (exemple pour une phrase : 
-		[{index du mot dans la phrase : 1, mot : mot1, gold_pos : ADV}, 
-         {index du mot dans la phrase 2, mot : mot2, gold_pos : DET}], etc."""
-	
-	data = [] # list of lists (sentences) of dictionaries (words)
+	"""Extracts and returns the data from a conllu file. Formats them in a list of lists (sentences) of dictionnaries (words).
+	Example:
+	[[{index: 1, word: sentence1word1, gold_POS : ADV}, {index: 2, word : sentence1word2, gold_POS : DET}, ...],
+	 [{index:1; word: sentence2word1, ...}, ...],
+	 ...]
+	file: the file path"""
+	data = []
 
 	with open(file, "r") as raw_file:
 		raw_content = raw_file.read()
@@ -180,8 +179,8 @@ def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
 
 
 def get_vectors_from_data(data):
-	
-	"""Création des vecteurs à partir des données extraites du fichiers
+	"""Creates and returns the word vectors from extracted data.
+	data: semi-raw data, as extracted/formatted by get_data_from_file
 	   return : list of tuples""" 
 	
 	# vectors: list of tuples, with (word vector, gold POS tag)
