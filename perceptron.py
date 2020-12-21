@@ -13,7 +13,7 @@ import time
 
 def get_word_vector(sentence, word, index):
 	"""Calculates the features of a given word, returns that vector.
-	Features: word, word before, word after, pre- and suffixes with len from 1 to 3 (if they exist), len = 1 or 2 or 3 or more RAF
+	Features: word, word before, word after, Capitalized and UPPER, pre- and suffixes with len from 1 to 3 (if they exist), len = 1 or 2 or 3 or more RAF
 	sentence: list of Strings (words), the original sentence.
 	word: String, the word.
 	index: index of word in the sentence. Taken from the corpus, so index of sentence[0] is 1.
@@ -179,11 +179,9 @@ def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
 
 
 def get_vectors_from_data(data):
-	"""Creates and returns the word vectors from extracted data.
-	data: semi-raw data, as extracted/formatted by get_data_from_file
-	   return : list of tuples""" 
+	"""Creates and returns the word vectors from extracted data, in the form of a list of tuples (word_vector, gold_POS)
+	data: semi-raw data, as extracted/formatted by get_data_from_file""" 
 	
-	# vectors: list of tuples, with (word vector, gold POS tag)
 	vectors = []
 	for sentence_data in data:
 		sentence = []
@@ -197,21 +195,22 @@ def get_vectors_from_data(data):
 
 
 if "__main__" == __name__:
+	"""Creates and trains a full POS-tagging averaged perceptron =D"""
 	
 	start_time = time.time()
-	
+	tagset = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
+
+	"""Data extraction"""
 	#train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
 	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
-	
 	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
 
+	"""Data formatting"""
 	#train_vectors = get_vectors_from_data(train_data)
 	dev_vectors = get_vectors_from_data(dev_data)
 	#test_vectors = get_vectors_from_data(test_data)
 	
-
-	tagset = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
-
+	"""Training"""
 	weigths = {} #donc que des 0 
 	weights = train(dev_vectors, tagset) #weights[feature][tag]
 	
