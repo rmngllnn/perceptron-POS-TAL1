@@ -222,7 +222,7 @@ def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
 	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data, to get the weights
 	dev_vectors: same, but a separate set, to evaluate the accuracy of the weights depending on the number of epochs they were trained on
 	tag_list: list of existing tags
-	range_n_epochs: a list of n_epochs values to test, easily created through the range(min, max, step) fonction
+	range_n_epochs: a list of n_epochs values to test, best created through the range(min, max, step) fonction
 	"""
 	results = {}
 	print("For MAX_EPOCH in "+str(range_n_epochs)+"\nn_epochs\t\taccuracy\t\ttime")
@@ -235,12 +235,12 @@ def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
 		results[n_epochs]["accuracy"] = evaluate(weights, train_vectors, tag_list)
 		results[n_epochs]["time"] = int(end_time-start_time)
 
-		print(str(n_epochs)+"\t\t"+str(results[n_epochs][accuracy])+"\t\t"+str(results[n_epochs][time]))
+		print(str(n_epochs)+"\t\t"+str(results[n_epochs]["accuracy"])+"\t\t"+str(results[n_epochs]["time"]))
 	return max(results, key=lambda n_epochs: (results[n_epochs]["accuracy"], n_epochs))
 
 
 if "__main__" == __name__:
-	"""Creates and trains a full POS-tagging averaged perceptron =D
+	"""Creates, trains and evaluates a full POS-tagging averaged perceptron.
 	"""	
 	start_time = time.time()
 	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
@@ -260,7 +260,7 @@ if "__main__" == __name__:
 	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
 	#test_vectors = get_vectors_from_data(test_data)
 
-	"""Time evaluation"""
+	"""Total time evaluation"""
 	print("Took "+str(int(time.time()-start_time))+" secondes")
 
 	#To do : validation with MAX_EPOCH and dev_vectors
