@@ -219,6 +219,10 @@ def evaluate(weights, test_vectors, tag_list):
 
 def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
 	"""Calculates the best MAX_EPOCH value in a given range.
+	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data, to get the weights
+	dev_vectors: same, but a separate set, to evaluate the accuracy of the weights depending on the number of epochs they were trained on
+	tag_list: list of existing tags
+	range_n_epochs: a list of n_epochs values to test, easily created through the range(min, max, step) fonction
 	"""
 	results = {}
 	print("For MAX_EPOCH in "+str(range_n_epochs)+"\nn_epochs\t\taccuracy\t\ttime")
