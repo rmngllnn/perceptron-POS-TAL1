@@ -16,12 +16,12 @@ def get_word_vector(sentence, word, index):
 	Features: word, word before, word after, Capitalized, UPPER, pre- and suffixes with len from 1 to 3 (if they exist), len = 1 or 2 or 3 or more
 	sentence: list of Strings (words), the original sentence.
 	word: String, the word.
-	index: index of word in the sentence. Taken from the corpus, so index of sentence[0] is 1.
+	index: index of word in the sentence. Taken from the corpus, so originally, index of sentence[0] is 1. Hence the line: index -= 1
 	"""
 	vector = {}
 	len_word = len(word)
 	len_sentence = len(sentence)
-	index -= 1 #to get the index in the list
+	index -= 1
 
 	vector["word="+word] = 1
 
@@ -75,20 +75,19 @@ def get_word_vector(sentence, word, index):
 
 
 
-def predict_tag(vector, weights, tagset):
+def predict_tag(vector, weights, tag_list):
 	"""Predicts and returns the tag of a word.
 	vector: features of the word, as calculated/formatted by get_word_vector
 	weights: the weights for each feature in the prediction
-	tagset: possible tags
+	tag_list: possible tags
 	"""
 	scores = {}
-	for tag in tagset:
+	for tag in tag_list:
 		scores[tag] = 0
 		for feature in vector:
 			if feature not in weights:
 				weights[feature] = {}
 			weights_feature = weights[feature]
-			#if feature in weights:
 			scores[tag] += weights_feature.get(tag,0) * vector[feature]
 	return max(scores, key=lambda tag: (scores[tag], tag))
 
@@ -124,34 +123,30 @@ def add_weights_to_average(average, weights):
 
 
 
-def train(vectors_corpus, tagset, MAX_EPOCH = 1, MAX_CORPUS = 0):
+def train(vectors_corpus, tag_list, MAX_EPOCH = 1):
 	"""Creates and return the weights to score each tags and predict the best one. Weights are averaged by adding each temporary value of them to each other.
 	vector_corpus: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data
-	tagset: list of potential tags
+	tag_list: list of potential tags
 	MAX_EPOCH: super parameter, yet to be set, number of times the algorithm goes through the whole corpus
-	MAX_CORPUS: number of words to be evaluated
 	"""
 	average = {}
-	if MAX_CORPUS == 0:
-		MAX_CORPUS = len(vectors_corpus)
 
 	for epoch in range(0, MAX_EPOCH):
-		print("epoch: "+str(epoch))
+		#print("epoch: "+str(epoch))
 		weights = {}
 		random.shuffle(vectors_corpus)
 		index_word = 0
 		n_words = len(vectors_corpus)
 
-		for word_index in range(0, MAX_CORPUS):
-		#for word in vectors_corpus:
-			word = vectors_corpus[word_index]
-			#print("epoch "+str(epoch)+"/"+str(MAX_EPOCH)+": "+str(index_word)+"/"+str(MAX_CORPUS)+" words") #TBD
+		for word in vectors_corpus:
+			#print("epoch "+str(epoch)+"/"+str(MAX_EPOCH)+": "+str(index_word)+"/"+str(len(vectors_corpus))+" words")
 			index_word += 1
-			predicted_tag = predict_tag(word[0], weights, tagset)
+			predicted_tag = predict_tag(word[0], weights, tag_list)
 			gold_tag = word[1]
 			if predicted_tag != gold_tag:
 				add_vector_to_weights(word[0], weights, predicted_tag, -1)
 				add_vector_to_weights(word[0], weights, gold_tag, +1)
+		#RAF la ligne suivante est dans la boucle for dans le pseudo-code du prof, ??
 		add_weights_to_average(average, weights)
 
 	return average
@@ -203,48 +198,59 @@ def get_vectors_from_data(data):
 	return vectors
 
 
-def evaluate(weights, test_set, tagset, MAX_CORPUS = 0):
+def evaluate(weights, test_vectors, tag_list):
 	"""Calculates the precision of the calculated weights on a testing corpus by counting the number of bad answers.
 	weights: the weights to evaluate
-	test_set: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data
-	tagset: list of existing tags
-	MAX_CORPUS: number of words to be evaluated
+	test_vectors: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data
+	tag_list: list of existing tags
 	"""
 	good = 0
-	if MAX_CORPUS == 0:
-		MAX_CORPUS = len(test_set)
+	random.shuffle(test_vectors)
 
-	random.shuffle(test_set)
-	for word_index in range(0, MAX_CORPUS):
-		word = test_set[word_index]
-		predicted_tag = predict_tag(word[0], weights, tagset)
+	for word in test_vectors:
+		predicted_tag = predict_tag(word[0], weights, tag_list)
 		gold_tag = word[1]
 		if predicted_tag == gold_tag:
 			good += 1
 
-	print("Good answers: "+str(good)+"/"+str(MAX_CORPUS))
+	#print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
 	return good
 
 
-def get_MAX_EPOCH(train_set, dev_set):
-	pass
+def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
+	"""Calculates the best MAX_EPOCH value in a given range.
+	"""
+	results = {}
+	print("For MAX_EPOCH in "+str(range_n_epochs)+"\nn_epochs\t\taccuracy\t\ttime")
+
+	for n_epochs in range_n_epochs:
+		start_time = time.time()
+		weights = train(train_vectors, tag_list, MAX_EPOCH=n_epochs)
+		end_time = time.time()
+		results[n_epochs] = {}
+		results[n_epochs][accuracy] = evaluate(weights, train_vectors, tag_list)
+		results[n_epochs][time] = int(end_time-start_time)
+
+		print(str(n_epochs)+"\t\t"+str(results[n_epochs][accuracy])+"\t\t"+str(results[n_epochs][time]))
+	return max(results, key=lambda n_epochs: (results[n_epochs][accuracy], n_epochs))
 
 
 if "__main__" == __name__:
 	"""Creates and trains a full POS-tagging averaged perceptron =D
 	"""	
 	start_time = time.time()
-	tagset = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
+	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
 	"""Training"""
 	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
 	train_vectors = get_vectors_from_data(train_data)
-	weights = train(train_vectors, tagset, MAX_EPOCH=3, MAX_CORPUS=5000)
-	evaluate(weights, train_vectors, tagset, MAX_CORPUS= 5000)
+	#weights = train(train_vectors, tag_list, MAX_EPOCH=3)
+	#evaluate(weights, train_vectors, tag_list)
 
 	"""MAX_EPOCH"""
-	#dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
-	#dev_vectors = get_vectors_from_data(dev_data)
+	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
+	dev_vectors = get_vectors_from_data(dev_data)
+	print(get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range(0,25,5)))
 
 	"""Evaluation"""
 	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
