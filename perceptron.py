@@ -232,11 +232,11 @@ def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
 		weights = train(train_vectors, tag_list, MAX_EPOCH=n_epochs)
 		end_time = time.time()
 		results[n_epochs] = {}
-		results[n_epochs][accuracy] = evaluate(weights, train_vectors, tag_list)
-		results[n_epochs][time] = int(end_time-start_time)
+		results[n_epochs]["accuracy"] = evaluate(weights, train_vectors, tag_list)
+		results[n_epochs]["time"] = int(end_time-start_time)
 
 		print(str(n_epochs)+"\t\t"+str(results[n_epochs][accuracy])+"\t\t"+str(results[n_epochs][time]))
-	return max(results, key=lambda n_epochs: (results[n_epochs][accuracy], n_epochs))
+	return max(results, key=lambda n_epochs: (results[n_epochs]["accuracy"], n_epochs))
 
 
 if "__main__" == __name__:
