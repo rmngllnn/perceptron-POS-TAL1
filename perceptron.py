@@ -195,6 +195,8 @@ def get_vectors_from_data(data):
 			word_vector = get_word_vector(sentence, word_data["word"], word_data["index"])
 			to_append = (word_vector, word_data["gold_POS"])
 			vectors.append(to_append)
+			
+			print(vectors)
 	return vectors
 
 
@@ -254,7 +256,7 @@ if "__main__" == __name__:
 	"""MAX_EPOCH"""
 	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
 	dev_vectors = get_vectors_from_data(dev_data)
-	print(get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range(0,25,5)))
+	#print(get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range(0,25,5)))
 
 	"""Evaluation"""
 	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
