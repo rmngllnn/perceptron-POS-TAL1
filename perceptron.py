@@ -225,7 +225,7 @@ def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
 	range_n_epochs: a list of n_epochs values to test, best created through the range(min, max, step) fonction
 	"""
 	results = {}
-	print("For MAX_EPOCH in "+str(range_n_epochs)+"\nn_epochs\t\taccuracy\t\ttime")
+	print("For MAX_EPOCH in "+str(range_n_epochs)+"\nn_epochs\taccuracy\ttime")
 
 	for n_epochs in range_n_epochs:
 		start_time = time.time()
