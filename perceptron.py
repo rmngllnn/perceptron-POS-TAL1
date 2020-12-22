@@ -84,10 +84,12 @@ def predict_tag(vector, weights, tagset):
 	scores = {}
 	for tag in tagset:
 		scores[tag] = 0
-		for feature in weights:
+		for feature in vector:
+			if feature not in weights:
+				weights[feature] = {}
 			weights_feature = weights[feature]
-			if feature in vector:
-				scores[tag] += weights_feature.get(tag,0) * vector[feature]
+			#if feature in weights:
+			scores[tag] += weights_feature.get(tag,0) * vector[feature]
 	return max(scores, key=lambda tag: (scores[tag], tag))
 
 
