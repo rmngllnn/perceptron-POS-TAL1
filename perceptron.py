@@ -276,7 +276,7 @@ def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
 
 def matrix_confusion(data, tag):
 	
-	"""return a confusion matrix to see common errors
+	"""return a confusion matrix to see performance of tagging
 	data is a list of pos (here tuple of pos (pred_pos, gold pos))
 	tag is a list of possible tags
 	"""
@@ -299,6 +299,11 @@ def matrix_confusion(data, tag):
 
 
 def matrix_plot(matrix, tag, graph_title):
+	
+	"""print and save on desktop an heatmap representing performance of tagging
+	matrix : confusion matrix
+	tag : list of possible tags
+	title : title of heatmap"""
     
     plt.figure(figsize=(12,12))
     plt.xticks(ticks=np.arange(len(tag)),labels=tag,rotation=90)
