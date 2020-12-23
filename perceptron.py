@@ -19,6 +19,9 @@ Projet POs-Tagginf with an averaged perceptron
 
 import random
 import time
+from sklearn.metrics import confusion_matrix
+import numpy as np
+import matplotlib.pyplot as plt
 
 def get_word_vector(sentence, word, index):
 	"""Calculates the features of a given word, returns that vector.
@@ -215,7 +218,7 @@ def get_vectors_from_data(data):
 			to_append = (word_vector, word_data["gold_POS"])
 			vectors.append(to_append)
 			
-			print(vectors)
+			#print(vectors)
 	return vectors
 
 
@@ -229,14 +232,20 @@ def evaluate(weights, test_vectors, tag_list):
 	"""
 	good = 0
 	random.shuffle(test_vectors)
+	
+	pos_pred_gold = []
 
 	for word in test_vectors:
 		predicted_tag = predict_tag(word[0], weights, tag_list)
 		gold_tag = word[1]
+		pos_pred_gold.append((predicted_tag,gold_tag))
 		if predicted_tag == gold_tag:
 			good += 1
+	
 
-	#print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
+		
+	state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #-> permettra de visualiser les erreurs détiquetage
+	print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
 	return good
 
 
@@ -261,8 +270,52 @@ def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
 		results[n_epochs]["accuracy"] = evaluate(weights, train_vectors, tag_list)
 		results[n_epochs]["time"] = int(end_time-start_time)
 
-		print(str(n_epochs)+"\t\t"+str(results[n_epochs]["accuracy"])+"\t\t"+str(results[n_epochs]["time"]))
+		#print(str(n_epochs)+"\t\t"+str(results[n_epochs]["accuracy"])+"\t\t"+str(results[n_epochs]["time"]))
 	return max(results, key=lambda n_epochs: (results[n_epochs]["accuracy"], n_epochs))
+
+
+def matrix_confusion(data, tag):
+	
+	"""return a confusion matrix to see common errors
+	data is a list of pos (here tuple of pos (pred_pos, gold pos))
+	tag is a list of possible tags
+	"""
+    
+
+	matrix = np.zeros((len(tag), len(tag)))
+	
+	gold_pos = []
+	pred_pos = []
+	
+	for pair in data:
+ 		pred_pos.append(pair[0])
+ 		gold_pos.append(pair[1])
+	
+	matrix += confusion_matrix(gold_pos, pred_pos, labels = tag)
+
+	plot = matrix_plot(matrix, tag, "test")
+
+	return matrix
+
+
+def matrix_plot(matrix, tag, graph_title):
+    
+    plt.figure(figsize=(12,12))
+    plt.xticks(ticks=np.arange(len(tag)),labels=tag,rotation=90)
+    plt.yticks(ticks=np.arange(len(tag)),labels=tag)
+    hm=plt.imshow(matrix, cmap='Blues', interpolation = None)
+    plt.colorbar(hm)
+    
+    plt.title(graph_title)
+    plt.xlabel("predicted_labels")
+    plt.ylabel("gold_labels")
+    
+    for i in range(len(tag)):
+        for j in range(len(tag)):
+            if matrix[i, j] > 0:
+                text = plt.text(j, i, int(matrix[i, j]), ha="center", va="center", color="brown")
+            
+    plt.savefig(graph_title)
 
 
 if "__main__" == __name__:
@@ -275,8 +328,8 @@ if "__main__" == __name__:
 	"""Training"""
 	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
 	train_vectors = get_vectors_from_data(train_data)
-	#weights = train(train_vectors, tag_list, MAX_EPOCH=3)
-	#evaluate(weights, train_vectors, tag_list)
+	weights = train(train_vectors, tag_list, MAX_EPOCH=3)
+	evaluate(weights, train_vectors, tag_list)
 
 	"""MAX_EPOCH"""
 	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
