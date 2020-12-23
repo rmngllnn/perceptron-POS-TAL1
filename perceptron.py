@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Projet POs-Tagginf with an averaged perceptron
+@authors: GALLIENNE Romane, GUITEL Cécile
+"""
+
+
+
 # corpus:
 # https://universaldependencies.org/treebanks/fr_gsd/index.html#ud-french-gs
 # https://github.com/UniversalDependencies/UD_French-GSD
@@ -13,10 +22,12 @@ import time
 
 def get_word_vector(sentence, word, index):
 	"""Calculates the features of a given word, returns that vector.
-	Features: word, word before, word after, Capitalized, UPPER, pre- and suffixes with len from 1 to 3 (if they exist), len = 1 or 2 or 3 or more
+	Features: word, word before, word after, Capitalized, UPPER, pre- and 
+	suffixes with len from 1 to 3 (if they exist), len = 1 or 2 or 3 or more
 	sentence: list of Strings (words), the original sentence.
 	word: String, the word.
-	index: index of word in the sentence. Taken from the corpus, so originally, index of sentence[0] is 1. Hence the line: index -= 1
+	index: index of word in the sentence. Taken from the corpus, so originally, 
+	index of sentence[0] is 1. Hence the line: index -= 1
 	"""
 	vector = {}
 	len_word = len(word)
@@ -94,7 +105,8 @@ def predict_tag(vector, weights, tag_list):
 
 
 def add_vector_to_weights(vector, weights, tag, factor):
-	"""Adds or substract (for factor = 1 and -1) a vector to a set of weights. Auxiliary fonction for train.
+	"""Adds or substract (for factor = 1 and -1) a vector to a set of weights. 
+	Auxiliary fonction for train.
 	vector: word vector, as calculated/formatted by get_word_vector()
 	weights: the weights for each feature in the prediction
 	tag: the tag that needs to be reevaluated
@@ -109,7 +121,8 @@ def add_vector_to_weights(vector, weights, tag, factor):
 
 
 def add_weights_to_average(average, weights):
-	"""Auxiliary fonction of train, adds the calculated weights to the average, to smooth variations out and allow for reaching a limit.
+	"""Auxiliary fonction of train, adds the calculated weights to the average, 
+	to smooth variations out and allow for reaching a limit.
 	average: the current average
 	weights: the calculated weights to be added
 	"""
@@ -124,10 +137,13 @@ def add_weights_to_average(average, weights):
 
 
 def train(vectors_corpus, tag_list, MAX_EPOCH = 1):
-	"""Creates and return the weights to score each tags and predict the best one. Weights are averaged by adding each temporary value of them to each other.
-	vector_corpus: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data
+	"""Creates and return the weights to score each tags and predict the best 
+	one. Weights are averaged by adding each temporary value of them to each other.
+	vector_corpus: list of tuples (vector_word, gold_POS), as created/formatted 
+	by get_vectors_from_data
 	tag_list: list of potential tags
-	MAX_EPOCH: super parameter, yet to be set, number of times the algorithm goes through the whole corpus
+	MAX_EPOCH: super parameter, yet to be set, number of times the algorithm goes 
+	through the whole corpus
 	"""
 	average = {}
 
@@ -154,9 +170,11 @@ def train(vectors_corpus, tag_list, MAX_EPOCH = 1):
 
 
 def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
-	"""Extracts and returns the data from a conllu file. Formats them in a list of lists (sentences) of dictionnaries (words).
+	"""Extracts and returns the data from a conllu file. Formats them in 
+	a list of lists (sentences) of dictionnaries (words).
 	Example:
-	[[{index: 1, word: sentence1word1, gold_POS : ADV}, {index: 2, word : sentence1word2, gold_POS : DET}, ...],
+	[[{index: 1, word: sentence1word1, gold_POS : ADV}, 
+   {index: 2, word : sentence1word2, gold_POS : DET}, ...],
 	 [{index:1; word: sentence2word1, ...}, ...],
 	 ...]
 	file: the file path
@@ -183,7 +201,8 @@ def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
 
 
 def get_vectors_from_data(data):
-	"""Creates and returns the word vectors from extracted data, in the form of a list of tuples (word_vector, gold_POS)
+	"""Creates and returns the word vectors from extracted data, in the form of 
+	a list of tuples (word_vector, gold_POS)
 	data: semi-raw data, as extracted/formatted by get_data_from_file
 	"""	
 	vectors = []
@@ -201,9 +220,11 @@ def get_vectors_from_data(data):
 
 
 def evaluate(weights, test_vectors, tag_list):
-	"""Calculates the precision of the calculated weights on a testing corpus by counting the number of bad answers.
+	"""Calculates the precision of the calculated weights on a testing corpus 
+	by counting the number of bad answers.
 	weights: the weights to evaluate
-	test_vectors: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data
+	test_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
+	by get_vectors_from_data
 	tag_list: list of existing tags
 	"""
 	good = 0
@@ -221,10 +242,13 @@ def evaluate(weights, test_vectors, tag_list):
 
 def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
 	"""Calculates the best MAX_EPOCH value in a given range.
-	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted by get_vectors_from_data, to get the weights
-	dev_vectors: same, but a separate set, to evaluate the accuracy of the weights depending on the number of epochs they were trained on
+	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
+	by get_vectors_from_data, to get the weights
+	dev_vectors: same, but a separate set, to evaluate the accuracy of the 
+	weights depending on the number of epochs they were trained on
 	tag_list: list of existing tags
-	range_n_epochs: a list of n_epochs values to test, best created through the range(min, max, step) fonction
+	range_n_epochs: a list of n_epochs values to test, best created through 
+	the range(min, max, step) fonction
 	"""
 	results = {}
 	print("For MAX_EPOCH in "+str(range_n_epochs)+"\nn_epochs\taccuracy\ttime")
@@ -245,7 +269,8 @@ if "__main__" == __name__:
 	"""Creates, trains and evaluates a full POS-tagging averaged perceptron.
 	"""	
 	start_time = time.time()
-	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART","PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
+	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART",
+			 "PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
 	"""Training"""
 	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
