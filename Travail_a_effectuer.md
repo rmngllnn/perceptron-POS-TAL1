@@ -13,5 +13,4 @@ Certains points seront précisés au fur et à mesure des dernières séances de
 - [ ] Amélioration des performances sur les données hors-domaines. On pourra considérer les deux méthodes suivantes :
 
   ​	1. Sélection des exemples d'apprentissage en fonction du domaine cible. Pour cela : on apprends un modèle de langue sur le domaine cible (par exemple avec [kenLM](https://github.com/kpu/kenlm)) et on sélectionne les phrases du [corpus](https://moodle.u-paris.fr/mod/resource/view.php?id=138839) d'apprentissage ayant la plus forte probabilité d'avoir été générée par ce modèle de langue
-
   ​	2. Définition de nouvelles caractéristiques robuste au changement de domaine (p. ex. après avoir identifié les erreurs fréquentes)
