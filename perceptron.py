@@ -244,7 +244,7 @@ def evaluate(weights, test_vectors, tag_list):
 	
 
 		
-	state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #-> permettra de visualiser les erreurs détiquetage
+	state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permettra de visualiser les erreurs détiquetage
 	print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
 	return good
 
@@ -303,7 +303,7 @@ def matrix_plot(matrix, tag, graph_title):
 	"""print and save on desktop an heatmap representing performance of tagging
 	matrix : confusion matrix
 	tag : list of possible tags
-	title : title of heatmap"""
+	graph_title : title of heatmap"""
     
     plt.figure(figsize=(12,12))
     plt.xticks(ticks=np.arange(len(tag)),labels=tag,rotation=90)
