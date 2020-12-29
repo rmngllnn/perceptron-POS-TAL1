@@ -19,7 +19,7 @@ Projet POs-Tagginf with an averaged perceptron
 
 import random
 import time
-from sklearn.metrics import confusion_matrix
+#from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -139,26 +139,34 @@ def add_weights_to_average(average, weights):
 
 
 
-def train(vectors_corpus, tag_list, MAX_EPOCH = 1):
+def train(train_vectors, tag_list, MAX_EPOCH = 1, evaluate_epochs = False, dev_vectors = None):
 	"""Creates and return the weights to score each tags and predict the best 
 	one. Weights are averaged by adding each temporary value of them to each other.
-	vector_corpus: list of tuples (vector_word, gold_POS), as created/formatted 
-	by get_vectors_from_data
-	tag_list: list of potential tags
-	MAX_EPOCH: super parameter, yet to be set, number of times the algorithm goes 
+	If evaluate_epochs = True, evaluates at every epoch to find the best MAX_EPOCH.
+
+	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
+	by get_vectors_from_data, to get the weights
+	tag_list: list of existing tags
+	MAX_EPOCH: super parameter, number of times the algorithm goes 
 	through the whole corpus
+	evaluate_epochs: whether to evaluate the weights at each epoch
+	dev_vectors: same, but a separate set, to evaluate the accuracy of the 
+	weights depending on the number of epochs they were trained on
 	"""
 	average = {}
+	if evaluate_epochs:
+		results = {}
+		print("For MAX_EPOCH in "+str(range(0,MAX_EPOCH))+"\nn_epochs\taccuracy")
 
 	for epoch in range(0, MAX_EPOCH):
 		#print("epoch: "+str(epoch))
 		weights = {}
-		random.shuffle(vectors_corpus)
+		random.shuffle(train_vectors)
 		index_word = 0
-		n_words = len(vectors_corpus)
+		n_words = len(train_vectors)
 
-		for word in vectors_corpus:
-			#print("epoch "+str(epoch)+"/"+str(MAX_EPOCH)+": "+str(index_word)+"/"+str(len(vectors_corpus))+" words")
+		for word in train_vectors:
+			#print("epoch "+str(epoch)+"/"+str(MAX_EPOCH)+": "+str(index_word)+"/"+str(len(train_vectors))+" words")
 			index_word += 1
 			predicted_tag = predict_tag(word[0], weights, tag_list)
 			gold_tag = word[1]
@@ -167,6 +175,13 @@ def train(vectors_corpus, tag_list, MAX_EPOCH = 1):
 				add_vector_to_weights(word[0], weights, gold_tag, +1)
 		#RAF la ligne suivante est dans la boucle for dans le pseudo-code du prof, ??
 		add_weights_to_average(average, weights)
+
+		if evaluate_epochs:
+			results[epoch] = evaluate(average, dev_vectors, tag_list)
+			print(str(epoch)+"\t\t"+str(results[epoch]))
+
+	if evaluate_epochs:
+		print("best MAX_EPOCH: "+str(max(results, key=lambda n_epochs: (results[epoch], epoch))))
 
 	return average
 
@@ -240,40 +255,14 @@ def evaluate(weights, test_vectors, tag_list):
 	for word in test_vectors:
 		predicted_tag = predict_tag(word[0], weights, tag_list)
 		gold_tag = word[1]
-		pos_pred_gold.append((predicted_tag,gold_tag))
+		#pos_pred_gold.append((predicted_tag,gold_tag))
 		if predicted_tag == gold_tag:
 			good += 1
-	
-
 		
-	state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permetde visualiser les erreurs détiquetage
+	#state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permet de visualiser les erreurs détiquetage
 	print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
+
 	return good
-
-
-def get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range_n_epochs):
-	"""Calculates the best MAX_EPOCH value in a given range.
-	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
-	by get_vectors_from_data, to get the weights
-	dev_vectors: same, but a separate set, to evaluate the accuracy of the 
-	weights depending on the number of epochs they were trained on
-	tag_list: list of existing tags
-	range_n_epochs: a list of n_epochs values to test, best created through 
-	the range(min, max, step) fonction
-	"""
-	results = {}
-	print("For MAX_EPOCH in "+str(range_n_epochs)+"\nn_epochs\taccuracy\ttime")
-
-	for n_epochs in range_n_epochs:
-		start_time = time.time()
-		weights = train(train_vectors, tag_list, MAX_EPOCH=n_epochs)
-		end_time = time.time()
-		results[n_epochs] = {}
-		results[n_epochs]["accuracy"] = evaluate(weights, train_vectors, tag_list)
-		results[n_epochs]["time"] = int(end_time-start_time)
-
-		#print(str(n_epochs)+"\t\t"+str(results[n_epochs]["accuracy"])+"\t\t"+str(results[n_epochs]["time"]))
-	return max(results, key=lambda n_epochs: (results[n_epochs]["accuracy"], n_epochs))
 
 
 def matrix_confusion(data, tag):
@@ -334,13 +323,13 @@ if "__main__" == __name__:
 	"""Training"""
 	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
 	train_vectors = get_vectors_from_data(train_data)
-	weights = train(train_vectors, tag_list, MAX_EPOCH=10)
-	evaluate(weights, train_vectors, tag_list)
+	#weights = train(train_vectors, tag_list, MAX_EPOCH=50)
+	#evaluate(weights, train_vectors, tag_list)
 
 	"""MAX_EPOCH"""
 	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
 	dev_vectors = get_vectors_from_data(dev_data)
-	#print(get_MAX_EPOCH(train_vectors, dev_vectors, tag_list, range(0,25,5)))
+	weights = train(train_vectors, tag_list, MAX_EPOCH=50, evaluate_epochs=True, dev_vectors=dev_vectors)
 
 	"""Evaluation"""
 	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
