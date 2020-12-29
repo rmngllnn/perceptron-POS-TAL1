@@ -6,7 +6,6 @@ Projet POs-Tagginf with an averaged perceptron
 """
 
 
-
 # corpus:
 # https://universaldependencies.org/treebanks/fr_gsd/index.html#ud-french-gs
 # https://github.com/UniversalDependencies/UD_French-GSD
@@ -23,15 +22,18 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def get_word_vector(sentence, word, index):
 	"""Calculates the features of a given word, returns that vector.
 	Features: word, word before, word after, Capitalized, UPPER, pre- and 
-	suffixes with len from 1 to 3 (if they exist), len = 1 or 2 or 3 or more
+	suffixes with len from 1 to 3 (if they exist), len = 1 or 2 or 3 or more.
+
 	sentence: list of Strings (words), the original sentence.
 	word: String, the word.
 	index: index of word in the sentence. Taken from the corpus, so originally, 
 	index of sentence[0] is 1. Hence the line: index -= 1
 	"""
+
 	vector = {}
 	len_word = len(word)
 	len_sentence = len(sentence)
@@ -91,10 +93,12 @@ def get_word_vector(sentence, word, index):
 
 def predict_tag(vector, weights, tag_list):
 	"""Predicts and returns the tag of a word.
+
 	vector: features of the word, as calculated/formatted by get_word_vector
 	weights: the weights for each feature in the prediction
 	tag_list: possible tags
 	"""
+
 	scores = {}
 	for tag in tag_list:
 		scores[tag] = 0
@@ -103,6 +107,7 @@ def predict_tag(vector, weights, tag_list):
 				weights[feature] = {}
 			weights_feature = weights[feature]
 			scores[tag] += weights_feature.get(tag,0) * vector[feature]
+
 	return max(scores, key=lambda tag: (scores[tag], tag))
 
 
@@ -110,11 +115,13 @@ def predict_tag(vector, weights, tag_list):
 def add_vector_to_weights(vector, weights, tag, factor):
 	"""Adds or substract (for factor = 1 and -1) a vector to a set of weights. 
 	Auxiliary fonction for train.
+
 	vector: word vector, as calculated/formatted by get_word_vector()
 	weights: the weights for each feature in the prediction
 	tag: the tag that needs to be reevaluated
 	factor: which way the tag needs to be reevaluated, here, 1 or -1
 	"""
+
 	for feature in vector:
 		if feature not in weights:
 			weights[feature] = {}
@@ -124,11 +131,14 @@ def add_vector_to_weights(vector, weights, tag, factor):
 
 
 def add_weights_to_average(average, weights):
-	"""Auxiliary fonction of train, adds the calculated weights to the average, 
-	to smooth variations out and allow for reaching a limit.
+	"""Adds the calculated weights to the average, to smooth
+	variations out and allow for reaching a limit. Auxiliary
+	fonction of train.
+
 	average: the current average
 	weights: the calculated weights to be added
 	"""
+
 	for feature in weights:
 		weights_feature = weights[feature]
 		for tag in weights[feature]:
@@ -141,8 +151,9 @@ def add_weights_to_average(average, weights):
 
 def train(train_vectors, tag_list, MAX_EPOCH = 1, evaluate_epochs = False, dev_vectors = None):
 	"""Creates and return the weights to score each tags and predict the best 
-	one. Weights are averaged by adding each temporary value of them to each other.
-	If evaluate_epochs = True, evaluates at every epoch to find the best MAX_EPOCH.
+	one. Weights are averaged by adding each temporary value of them to each
+	other. If evaluate_epochs = True, evaluates at every epoch to find the best
+	MAX_EPOCH (up to the value given as parameter of the function).
 
 	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
 	by get_vectors_from_data, to get the weights
@@ -153,6 +164,7 @@ def train(train_vectors, tag_list, MAX_EPOCH = 1, evaluate_epochs = False, dev_v
 	dev_vectors: same, but a separate set, to evaluate the accuracy of the 
 	weights depending on the number of epochs they were trained on
 	"""
+
 	average = {}
 	if evaluate_epochs:
 		results = {}
@@ -195,8 +207,10 @@ def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
    {index: 2, word : sentence1word2, gold_POS : DET}, ...],
 	 [{index:1; word: sentence2word1, ...}, ...],
 	 ...]
+
 	file: the file path
 	"""
+
 	data = []
 
 	with open(file, "r") as raw_file:
@@ -218,11 +232,14 @@ def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
 	return data
 
 
+
 def get_vectors_from_data(data):
 	"""Creates and returns the word vectors from extracted data, in the form of 
 	a list of tuples (word_vector, gold_POS)
+
 	data: semi-raw data, as extracted/formatted by get_data_from_file
 	"""	
+
 	vectors = []
 	for sentence_data in data:
 		sentence = []
@@ -232,90 +249,101 @@ def get_vectors_from_data(data):
 			word_vector = get_word_vector(sentence, word_data["word"], word_data["index"])
 			to_append = (word_vector, word_data["gold_POS"])
 			vectors.append(to_append)
-			
 			#print(vectors)
 	return vectors
 
 
-def evaluate(weights, test_vectors, tag_list):
+
+def evaluate(weights, test_vectors, tag_list, confusion_matrix = False):
 	"""Calculates the precision of the calculated weights on a testing corpus 
-	by counting the number of bad answers.
+	by counting the number of bad answers. If confusion_matrix = True,
+	calculates and save that error matrix.
+
 	weights: the weights to evaluate
 	test_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
 	by get_vectors_from_data
 	tag_list: list of existing tags
 	"""
+
 	good = 0
 	random.shuffle(test_vectors)
-	
-	#pos_pred_gold is a list of tuple (pred_pos,gold_pos) that is used to
-	#create a confusion matrix to see performance of tagging
-	pos_pred_gold = []
+
+	#if confusion_matrix:
+		#pos_pred_gold is a list of tuple (pred_pos,gold_pos) that is used to
+		#create a confusion matrix to see performance of tagging
+		#pos_pred_gold = []
 
 	for word in test_vectors:
 		predicted_tag = predict_tag(word[0], weights, tag_list)
 		gold_tag = word[1]
-		#pos_pred_gold.append((predicted_tag,gold_tag))
+		#if confusion_matrix:
+			#pos_pred_gold.append((predicted_tag,gold_tag))
 		if predicted_tag == gold_tag:
 			good += 1
-		
-	#state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permet de visualiser les erreurs détiquetage
-	print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
+
+	#if confusion_matrix:	
+		#state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permet de visualiser les erreurs d'étiquetage
+
+	#print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
 
 	return good
 
 
-def matrix_confusion(data, tag):
-	
-	"""return a confusion matrix to see performance of tagging
-	data is a list of pos (here tuple of pos (pred_pos, gold pos))
-	tag is a list of possible tags
-	"""
-    
 
-	matrix = np.zeros((len(tag), len(tag)))
+def matrix_confusion(decision_corpus, tag_list):
+	"""Calculates and returns a confusion matrix to analyse tagging performance.
+
+	decision_corpus: list of tagging decisions, saved as tuples (pred_pos, gold
+	pos)
+	tag_list: list of existing tags
+	"""
+
+	matrix = np.zeros((len(tag_list), len(tag_list)))
 	
 	gold_pos = []
 	pred_pos = []
 	
-	for pair in data:
+	for pair in decision_corpus:
  		pred_pos.append(pair[0])
  		gold_pos.append(pair[1])
 	
-	matrix += confusion_matrix(gold_pos, pred_pos, labels = tag)
-
-	plot = matrix_plot(matrix, tag, "Confusion matrix of PoSTagging")
+	matrix += confusion_matrix(gold_pos, pred_pos, labels = tag_list)
+	matrix_plot(matrix, tag_list, "Confusion matrix of PoSTagging")
 
 	return matrix
 
 
-def matrix_plot(matrix, tag, graph_title):
-	
-	"""print and save on desktop an heatmap representing performance of tagging
-	matrix : confusion matrix
-	tag : list of possible tags
-	graph_title : title of heatmap"""
+
+def matrix_plot(confusion_matrix, tag_list, graph_title):
+	"""Prints and saves on desktop a heatmap of the common errors.
+
+	confusion_matrix: confusion matrix, as calculated by matrix_confusion()
+	tag_list : list of existing tags
+	graph_title : title of the heatmap
+	"""
     
 	plt.figure(figsize=(12,12))
-	plt.xticks(ticks=np.arange(len(tag)),labels=tag,rotation=90)
-	plt.yticks(ticks=np.arange(len(tag)),labels=tag)
-	hm=plt.imshow(matrix, cmap='Blues', interpolation = None) 
+	plt.xticks(ticks=np.arange(len(tag_list)),labels=tag_list,rotation=90)
+	plt.yticks(ticks=np.arange(len(tag_list)),labels=tag_list)
+	hm=plt.imshow(confusion_matrix, cmap='Blues', interpolation = None) 
 	plt.colorbar(hm) 
 	plt.title(graph_title) 
 	plt.xlabel("predicted_labels") 
 	plt.ylabel("gold_labels") 
 	
-	for i in range(len(tag)): 
-		for j in range(len(tag)): 
-			if matrix[i, j] > 0:
-				text = plt.text(j, i, int(matrix[i, j]), ha="center", va="center", color="brown") 
+	for i in range(len(tag_list)): 
+		for j in range(len(tag_list)): 
+			if confusion_matrix[i, j] > 0:
+				text = plt.text(j, i, int(confusion_matrix[i, j]), ha="center", va="center", color="brown") 
 	
 	plt.savefig(graph_title)
 
 
+
 if "__main__" == __name__:
-	"""Creates, trains and evaluates a full POS-tagging averaged perceptron.
-	"""	
+	"""Creates, trains and evaluates an averaged POS-tagging perceptron.
+	"""
+
 	start_time = time.time()
 	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART",
 			 "PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
@@ -329,7 +357,7 @@ if "__main__" == __name__:
 	"""MAX_EPOCH"""
 	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
 	dev_vectors = get_vectors_from_data(dev_data)
-	weights = train(train_vectors, tag_list, MAX_EPOCH=50, evaluate_epochs=True, dev_vectors=dev_vectors)
+	weights = train(train_vectors, tag_list, MAX_EPOCH=100, evaluate_epochs=True, dev_vectors=dev_vectors)
 
 	"""Evaluation"""
 	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
