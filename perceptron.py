@@ -18,7 +18,7 @@ Projet POs-Tagginf with an averaged perceptron
 
 import random
 import time
-#from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -284,7 +284,7 @@ def evaluate(weights, test_vectors, tag_list, confusion_matrix = False):
 	#if confusion_matrix:	
 		#state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permet de visualiser les erreurs d'étiquetage
 
-	#print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
+	print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
 
 	return good
 
@@ -357,11 +357,14 @@ if "__main__" == __name__:
 	"""MAX_EPOCH"""
 	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
 	dev_vectors = get_vectors_from_data(dev_data)
-	weights = train(train_vectors, tag_list, MAX_EPOCH=100, evaluate_epochs=True, dev_vectors=dev_vectors)
+	#weights = train(dev_vectors, tag_list, MAX_EPOCH=5, evaluate_epochs=True, dev_vectors=dev_vectors)
+	#evaluate(weights, train_vectors, tag_list)
 
 	"""Evaluation"""
-	#test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
-	#test_vectors = get_vectors_from_data(test_data)
+	test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
+	test_vectors = get_vectors_from_data(test_data)
+	weights = train(test_vectors, tag_list, MAX_EPOCH=50)
+	evaluate(weights, test_vectors, tag_list)
 
 	"""Total time evaluation"""
 	print("Took "+str(int(time.time()-start_time))+" secondes")
