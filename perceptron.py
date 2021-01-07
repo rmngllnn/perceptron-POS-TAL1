@@ -348,10 +348,10 @@ if "__main__" == __name__:
 	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART",
 			 "PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
-	"""Training"""
+	"""Training in-domain"""
 	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
 	train_vectors = get_vectors_from_data(train_data)
-	#weights = train(train_vectors, tag_list, MAX_EPOCH=50)
+	weights = train(train_vectors, tag_list, MAX_EPOCH=50)
 	#evaluate(weights, train_vectors, tag_list)
 
 	"""MAX_EPOCH"""
@@ -360,13 +360,29 @@ if "__main__" == __name__:
 	#weights = train(dev_vectors, tag_list, MAX_EPOCH=5, evaluate_epochs=True, dev_vectors=dev_vectors)
 	#evaluate(weights, train_vectors, tag_list)
 
-	"""Evaluation"""
+	"""Evaluation in-domain"""
 	test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
 	test_vectors = get_vectors_from_data(test_data)
-	weights = train(test_vectors, tag_list, MAX_EPOCH=50)
-	evaluate(weights, test_vectors, tag_list)
+	#weights = train(test_vectors, tag_list, MAX_EPOCH=50)
+	#evaluate(weights, test_vectors, tag_list)
+	
+	
+	"""Training hors domaine"""
+	train_data_hd = get_data_from_file("./Eval_HorsDomaine/French_Spoken/fr_spoken-ud-train.conllu")
+	#train_data_hd = get_data_from_file("./Eval_HorsDomaine/French_SRCMF/fro_srcmf-ud-train.conllu") 
+	train_vectors_hd = get_vectors_from_data(train_data_hd)
+	#weights_hd = train(train_vectors, tag_list, MAX_EPOCH=50)
+	evaluate(weights, train_vectors_hd, tag_list)
 
 	"""Total time evaluation"""
-	print("Took "+str(int(time.time()-start_time))+" secondes")
+	print("Took "+str(int(time.time()-start_time))+" secondes") 
 
 	#To do : validation with MAX_EPOCH and dev_vectors
+	#To do : Evaluation Hors Domaine
+	
+	"""Notes sur l‘évaluation hors domaine (mais il est possible que je me sois embrouillée dans les donnée à prendre) :
+		J‘ai fait tourné avec :
+			comme vecteur de données : train hors-domain
+			comme vecteur de poids : weights in-domain
+			Max_EPOCH = 50
+			Résultat : 13 316 / 15 172 soit 87.7% de réussite"""
