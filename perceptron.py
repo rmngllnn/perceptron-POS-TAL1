@@ -271,19 +271,21 @@ def evaluate(weights, test_vectors, tag_list, confusion_matrix = False):
 	#if confusion_matrix:
 		#pos_pred_gold is a list of tuple (pred_pos,gold_pos) that is used to
 		#create a confusion matrix to see performance of tagging
-		#pos_pred_gold = []
+	pos_pred_gold = []
 
 	for word in test_vectors:
 		predicted_tag = predict_tag(word[0], weights, tag_list)
 		gold_tag = word[1]
 		#if confusion_matrix:
-			#pos_pred_gold.append((predicted_tag,gold_tag))
+		pos_pred_gold.append((predicted_tag,gold_tag))
 		if predicted_tag == gold_tag:
 			good += 1
 
 	#if confusion_matrix:	
-		#state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permet de visualiser les erreurs d'étiquetage
-
+	state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permet de visualiser les erreurs d'étiquetage
+	error = error_frequency(state_of_tagging)
+	
+	print(error)
 	print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
 
 	return good
@@ -337,6 +339,30 @@ def matrix_plot(confusion_matrix, tag_list, graph_title):
 				text = plt.text(j, i, int(confusion_matrix[i, j]), ha="center", va="center", color="brown") 
 	
 	plt.savefig(graph_title)
+	
+	
+def error_frequency(matrix):
+	
+	"""returns the value of the 3 most frequent errors.
+	
+	/!\ Ne renvoieque les valeurs. Avoir comment on pourrait facilement récupérer
+	les predicted/gold pos associés
+
+	matrix : confusion matrix, as calculated by matrix_confusion()
+	"""
+
+	list_freq= []
+
+	for i in range(len(matrix)):
+		for j in range(len(matrix)):
+			if len(list_freq) == 3:
+				if i != j and matrix[i][j] > list_freq[0]:
+					list_freq.remove(list_freq[0])
+					list_freq.append(matrix[i][j])
+			elif i != j:
+				list_freq.append(matrix[i][j])
+				list_freq.sort()
+	return list_freq
 
 
 
@@ -351,7 +377,7 @@ if "__main__" == __name__:
 	"""Training in-domain"""
 	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
 	train_vectors = get_vectors_from_data(train_data)
-	weights = train(train_vectors, tag_list, MAX_EPOCH=50)
+	#weights = train(train_vectors, tag_list, MAX_EPOCH=50)
 	#evaluate(weights, train_vectors, tag_list)
 
 	"""MAX_EPOCH"""
@@ -363,8 +389,8 @@ if "__main__" == __name__:
 	"""Evaluation in-domain"""
 	test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
 	test_vectors = get_vectors_from_data(test_data)
-	#weights = train(test_vectors, tag_list, MAX_EPOCH=50)
-	#evaluate(weights, test_vectors, tag_list)
+	weights = train(test_vectors, tag_list, MAX_EPOCH=50)
+	evaluate(weights, test_vectors, tag_list)
 	
 	
 	"""Training hors domaine"""
@@ -372,7 +398,7 @@ if "__main__" == __name__:
 	#train_data_hd = get_data_from_file("./Eval_HorsDomaine/French_SRCMF/fro_srcmf-ud-train.conllu") 
 	train_vectors_hd = get_vectors_from_data(train_data_hd)
 	#weights_hd = train(train_vectors, tag_list, MAX_EPOCH=50)
-	evaluate(weights, train_vectors_hd, tag_list)
+	#evaluate(weights, train_vectors_hd, tag_list)
 
 	"""Total time evaluation"""
 	print("Took "+str(int(time.time()-start_time))+" secondes") 
