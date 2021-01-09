@@ -271,6 +271,8 @@ def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajoute
 		decision["predicted_tag"] = predict_tag(decision["word_vector"], weights, tag_list)
 		
 		decision_corpus.append(decision)
+		
+	print("DECISION : ", decision_corpus)
 
 	return decision_corpus
 
