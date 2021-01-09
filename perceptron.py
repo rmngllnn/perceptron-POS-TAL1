@@ -377,26 +377,26 @@ if "__main__" == __name__:
 	"""Training in-domain"""
 	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
 	train_vectors = get_vectors_from_data(train_data)
-	#weights = train(train_vectors, tag_list, MAX_EPOCH=50)
+	weights = train(train_vectors, tag_list, MAX_EPOCH=10)
 	#evaluate(weights, train_vectors, tag_list)
 
 	"""MAX_EPOCH"""
-	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
-	dev_vectors = get_vectors_from_data(dev_data)
+	#dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
+	#dev_vectors = get_vectors_from_data(dev_data)
 	#weights = train(dev_vectors, tag_list, MAX_EPOCH=5, evaluate_epochs=True, dev_vectors=dev_vectors)
 	#evaluate(weights, train_vectors, tag_list)
 
 	"""Evaluation in-domain"""
 	test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
 	test_vectors = get_vectors_from_data(test_data)
-	weights = train(test_vectors, tag_list, MAX_EPOCH=50)
+	#weights = train(test_vectors, tag_list, MAX_EPOCH=50)
 	evaluate(weights, test_vectors, tag_list)
 	
 	
 	"""Training hors domaine"""
-	train_data_hd = get_data_from_file("./Eval_HorsDomaine/French_Spoken/fr_spoken-ud-train.conllu")
+	#train_data_hd = get_data_from_file("./Eval_HorsDomaine/French_Spoken/fr_spoken-ud-train.conllu")
 	#train_data_hd = get_data_from_file("./Eval_HorsDomaine/French_SRCMF/fro_srcmf-ud-train.conllu") 
-	train_vectors_hd = get_vectors_from_data(train_data_hd)
+	#train_vectors_hd = get_vectors_from_data(train_data_hd)
 	#weights_hd = train(train_vectors, tag_list, MAX_EPOCH=50)
 	#evaluate(weights, train_vectors_hd, tag_list)
 
