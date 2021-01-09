@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from perceptron_basics import *
-from perceptron_serialise import deserialise_weights
+from perceptron_serialisation import deserialise_weights
 
 def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajouter in/out vocab ??
 	"""Creates and returns a list of decisions taken by the perceptron, in the
