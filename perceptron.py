@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Projet POs-Tagginf with an averaged perceptron
+Projet POs-Tagging with an averaged perceptron
 @authors: GALLIENNE Romane, GUITEL Cécile
 """
 
@@ -18,9 +18,67 @@ Projet POs-Tagginf with an averaged perceptron
 
 import random
 import time
-from sklearn.metrics import confusion_matrix
+#from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+
+
+
+
+def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
+	"""Extracts and returns the data from a conllu file. Formats them in 
+	a list of lists (sentences) of dictionnaries (words).
+	Example:
+	[[{index: 1, word: sentence1word1, gold_POS : ADV}, 
+   {index: 2, word : sentence1word2, gold_POS : DET}, ...],
+	 [{index:1; word: sentence2word1, ...}, ...],
+	 ...]
+
+	file: the file path
+	"""
+
+	data = []
+
+	with open(file, "r") as raw_file:
+		raw_content = raw_file.read()
+		sentences = raw_content.split("\n\n")
+		for sentence in sentences:
+			sentence_data = []
+			for line in sentence.split("\n"):
+				if line != "" and line[0] != "#":
+					tabs = line.split("\t")
+					if tabs[3] != "_":
+						to_append = {}
+						to_append["index"] = int(tabs[0])
+						to_append["word"] = tabs[1]
+						to_append["gold_POS"] = tabs[3]
+						sentence_data.append(to_append)
+			data.append(sentence_data)
+	
+	return data
+
+
+
+def get_vectors_from_data(data):
+	"""Creates and returns the word vectors from extracted data, in the form of 
+	a list of tuples (word_vector, gold_POS)
+
+	data: semi-raw data, as extracted/formatted by get_data_from_file
+	"""	
+
+	vectors = []
+	for sentence_data in data:
+		sentence = []
+		for word_data in sentence_data:
+			sentence.append(word_data["word"])
+		for word_data in sentence_data:
+			word_vector = get_word_vector(sentence, word_data["word"], word_data["index"])
+			to_append = (word_vector, word_data["gold_POS"])
+			vectors.append(to_append)
+			#print(vectors)
+	return vectors
+
 
 
 def get_word_vector(sentence, word, index):
@@ -69,13 +127,17 @@ def get_word_vector(sentence, word, index):
 
 	if len_word > 0:
 		vector["prefix1="+word[0:1]] = 1
+		vector["suffix1="+word[-1::]] = 1
 
 	if len_word > 1:
 		vector["prefix2="+word[0:2]] = 1
+		vector["suffix2="+word[-2::]] = 1
 
 	if len_word > 2:
 		vector["prefix3="+word[0:3]] = 1
+		vector["suffix3="+word[-3::]] = 1
 
+	"""
 	if len_word > 0:
 		vector["suffix1="+word[-1::]] = 1
 
@@ -84,6 +146,7 @@ def get_word_vector(sentence, word, index):
 
 	if len_word > 2:
 		vector["suffix3="+word[-3::]] = 1
+	"""
 
 	#print(vector)
 
@@ -152,7 +215,8 @@ def add_weights_to_average(average, weights):
 def train(train_vectors, tag_list, MAX_EPOCH = 1, evaluate_epochs = False, dev_vectors = None):
 	"""Creates and return the weights to score each tags and predict the best 
 	one. Weights are averaged by adding each temporary value of them to each
-	other. If evaluate_epochs = True, evaluates at every epoch to find the best
+	other.
+	If evaluate_epochs = True, evaluates at every epoch to find the best
 	MAX_EPOCH (up to the value given as parameter of the function).
 
 	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
@@ -167,11 +231,12 @@ def train(train_vectors, tag_list, MAX_EPOCH = 1, evaluate_epochs = False, dev_v
 
 	average = {}
 	if evaluate_epochs:
-		results = {}
-		print("For MAX_EPOCH in "+str(range(0,MAX_EPOCH))+"\nn_epochs\taccuracy")
+		accuracy_by_epoch = {}
+		#print("For MAX_EPOCH in "+str(range(0,MAX_EPOCH))+"\nn_epochs\taccuracy")
 
 	for epoch in range(0, MAX_EPOCH):
-		#print("epoch: "+str(epoch))
+		print("epoch: "+str(epoch+1))
+
 		weights = {}
 		random.shuffle(train_vectors)
 		index_word = 0
@@ -185,79 +250,24 @@ def train(train_vectors, tag_list, MAX_EPOCH = 1, evaluate_epochs = False, dev_v
 			if predicted_tag != gold_tag:
 				add_vector_to_weights(word[0], weights, predicted_tag, -1)
 				add_vector_to_weights(word[0], weights, gold_tag, +1)
-		#RAF la ligne suivante est dans la boucle for dans le pseudo-code du prof, ??
+		#RAF la ligne suivante est dans la seconde boucle for dans le pseudo-code du prof, ?
 		add_weights_to_average(average, weights)
 
 		if evaluate_epochs:
-			results[epoch] = evaluate(average, dev_vectors, tag_list)
-			print(str(epoch)+"\t\t"+str(results[epoch]))
+			accuracy_by_epoch[epoch] = evaluate_accuracy(get_decision_corpus(weights, dev_vectors, tag_list))
+			#print(str(epoch)+"\t\t"+str(accuracy_by_epoch[epoch]))
 
 	if evaluate_epochs:
-		print("best MAX_EPOCH: "+str(max(results, key=lambda n_epochs: (results[epoch], epoch))))
+		print("best MAX_EPOCH: "+str(max(results, key=lambda n_epochs: (accuracy_by_epoch[epoch], epoch))))
 
 	return average
 
 
 
-def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
-	"""Extracts and returns the data from a conllu file. Formats them in 
-	a list of lists (sentences) of dictionnaries (words).
-	Example:
-	[[{index: 1, word: sentence1word1, gold_POS : ADV}, 
-   {index: 2, word : sentence1word2, gold_POS : DET}, ...],
-	 [{index:1; word: sentence2word1, ...}, ...],
-	 ...]
-
-	file: the file path
-	"""
-
-	data = []
-
-	with open(file, "r") as raw_file:
-		raw_content = raw_file.read()
-		sentences = raw_content.split("\n\n")
-		for sentence in sentences:
-			sentence_data = []
-			for line in sentence.split("\n"):
-				if line != "" and line[0] != "#":
-					tabs = line.split("\t")
-					if tabs[3] != "_":
-						to_append = {}
-						to_append["index"] = int(tabs[0])
-						to_append["word"] = tabs[1]
-						to_append["gold_POS"] = tabs[3]
-						sentence_data.append(to_append)
-			data.append(sentence_data)
-	
-	return data
-
-
-
-def get_vectors_from_data(data):
-	"""Creates and returns the word vectors from extracted data, in the form of 
-	a list of tuples (word_vector, gold_POS)
-
-	data: semi-raw data, as extracted/formatted by get_data_from_file
-	"""	
-
-	vectors = []
-	for sentence_data in data:
-		sentence = []
-		for word_data in sentence_data:
-			sentence.append(word_data["word"])
-		for word_data in sentence_data:
-			word_vector = get_word_vector(sentence, word_data["word"], word_data["index"])
-			to_append = (word_vector, word_data["gold_POS"])
-			vectors.append(to_append)
-			#print(vectors)
-	return vectors
-
-
-
-def evaluate(weights, test_vectors, tag_list, confusion_matrix = False):
-	"""Calculates the precision of the calculated weights on a testing corpus 
-	by counting the number of bad answers. If confusion_matrix = True,
-	calculates and save that error matrix.
+def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajouter in/out vocab ??
+	"""Creates and returns a list of decisions taken by the perceptron, in the
+	form of dictionaries with the following keys: word_vector, gold_tag,
+	predicted_tag.
 
 	weights: the weights to evaluate
 	test_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
@@ -265,66 +275,55 @@ def evaluate(weights, test_vectors, tag_list, confusion_matrix = False):
 	tag_list: list of existing tags
 	"""
 
-	good = 0
-	random.shuffle(test_vectors)
-
-	#if confusion_matrix:
-		#pos_pred_gold is a list of tuple (pred_pos,gold_pos) that is used to
-		#create a confusion matrix to see performance of tagging
-	pos_pred_gold = []
+	decision_corpus = []
 
 	for word in test_vectors:
-		predicted_tag = predict_tag(word[0], weights, tag_list)
-		gold_tag = word[1]
-		#if confusion_matrix:
-		pos_pred_gold.append((predicted_tag,gold_tag))
-		if predicted_tag == gold_tag:
-			good += 1
+		decision = {}
+		decision["word_vector"] = word[0]
+		decision["gold_tag"] = word[1]
+		decision["predicted_tag"] = predict_tag(decision["word_vector"], weights, tag_list)
+		
+		decision_corpus.append(decision)
 
-	#if confusion_matrix:	
-	state_of_tagging = matrix_confusion(pos_pred_gold, tag_list) #permet de visualiser les erreurs d'étiquetage
-	error = error_frequency(state_of_tagging)
-	
-	print(error)
-	print("Good answers: "+str(good)+"/"+str(len(test_vectors)))
-
-	return good
+	return decision_corpus
 
 
 
-def matrix_confusion(decision_corpus, tag_list):
-	"""Calculates and returns a confusion matrix to analyse tagging performance.
+#def get_confusion_matrix(decision_corpus, tag_list, graph_title):
+	"""Calculates and returns a confusion matrix to analyse tagging performance. Also plots
+	and saves it using plot_and_save_confusion_matrix().
 
-	decision_corpus: list of tagging decisions, saved as tuples (pred_pos, gold
-	pos)
+	decision_corpus: list of tagging decisions, saved as dictionaries (word_vec, pred_pos,
+	gold_pos), as created/formatted by get_decision_corpus()
 	tag_list: list of existing tags
+	graph_title: string, title of the heatmap to create and save
 	"""
 
-	matrix = np.zeros((len(tag_list), len(tag_list)))
+	"""matrix = np.zeros((len(tag_list), len(tag_list)))
 	
 	gold_pos = []
 	pred_pos = []
 	
-	for pair in decision_corpus:
- 		pred_pos.append(pair[0])
- 		gold_pos.append(pair[1])
+	for decision in decision_corpus:
+ 		pred_pos.append(decision["predicted_tag"])
+ 		gold_pos.append(decision["gold_tag"])
 	
 	matrix += confusion_matrix(gold_pos, pred_pos, labels = tag_list)
-	matrix_plot(matrix, tag_list, "Confusion matrix of PoSTagging")
+	plot_and_save_confusion_matrix(matrix, tag_list, graph_title)
 
-	return matrix
+	return matrix"""
 
 
 
-def matrix_plot(confusion_matrix, tag_list, graph_title):
-	"""Prints and saves on desktop a heatmap of the common errors.
+#def plot_and_save_confusion_matrix(confusion_matrix, tag_list, graph_title):
+	"""Prints and saves on desktop a heatmap of the confusion matrix.
 
-	confusion_matrix: confusion matrix, as calculated by matrix_confusion()
+	confusion_matrix: confusion matrix, as calculated by get_confusion_matrix()
 	tag_list : list of existing tags
 	graph_title : title of the heatmap
 	"""
     
-	plt.figure(figsize=(12,12))
+	"""plt.figure(figsize=(12,12))
 	plt.xticks(ticks=np.arange(len(tag_list)),labels=tag_list,rotation=90)
 	plt.yticks(ticks=np.arange(len(tag_list)),labels=tag_list)
 	hm=plt.imshow(confusion_matrix, cmap='Blues', interpolation = None) 
@@ -338,20 +337,17 @@ def matrix_plot(confusion_matrix, tag_list, graph_title):
 			if confusion_matrix[i, j] > 0:
 				text = plt.text(j, i, int(confusion_matrix[i, j]), ha="center", va="center", color="brown") 
 	
-	plt.savefig(graph_title)
+	plt.savefig(graph_title)"""
+
+
 	
-	
-def error_frequency(matrix):
-	
-	"""returns the value of the 3 most frequent errors.
-	
-	/!\ Ne renvoieque les valeurs. Avoir comment on pourrait facilement récupérer
-	les predicted/gold pos associés
+#def get_most_frequent_confusions(matrix):
+	"""Returns the name of the 3 most frequent confusions.
 
 	matrix : confusion matrix, as calculated by matrix_confusion()
 	"""
 
-	list_freq= []
+	"""list_freq= []
 
 	for i in range(len(matrix)):
 		for j in range(len(matrix)):
@@ -362,7 +358,48 @@ def error_frequency(matrix):
 			elif i != j:
 				list_freq.append(matrix[i][j])
 				list_freq.sort()
-	return list_freq
+	return list_freq"""
+
+
+
+def evaluate_accuracy(decision_corpus):
+	"""Calculates, prints and returns the number of good guesses.
+	Prints the errors."""
+
+	good = 0
+	for decision in decision_corpus:
+		if decision["gold_tag"] == decision["predicted_tag"]:
+			good += 1
+
+	print("Accuracy: "+str(good)+"/"+str(len(decision_corpus)))
+	return good
+
+
+def print_errors(decision_corpus):
+	"""Just prints the errors."""
+
+	for decision in decision_corpus:
+		if decision["gold_tag"] != decision["predicted_tag"]:
+			print(decision["word_vector"])
+			
+
+def serialisation_weight_vectors(weight_vector):
+	
+	"""save on desktop in a pickle file weight vectors to prevent from
+	   creating each time the weight vector"""
+    
+	file_name = "weight_vector.pkl"
+	f = open(file_name, "wb")
+	pickle.dump(weight_vector, f)
+	f.close()
+
+def deserialisation_weight_vectors():
+	data = open("weight_vector.pkl", 'rb') 
+	de = pickle.load(data)
+	print(de)
+	data.close()
+			
+
 
 
 
@@ -370,45 +407,55 @@ if "__main__" == __name__:
 	"""Creates, trains and evaluates an averaged POS-tagging perceptron.
 	"""
 
+	print("Creating weights with gsd corpus")
 	start_time = time.time()
 	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART",
 			 "PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
-	"""Training in-domain"""
-	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
-	train_vectors = get_vectors_from_data(train_data)
-	weights = train(train_vectors, tag_list, MAX_EPOCH=10)
-	#evaluate(weights, train_vectors, tag_list)
+	train_data_gsd = get_data_from_file("./fr_gsd-ud-train.conllu")
+	train_vectors_gsd = get_vectors_from_data(train_data_gsd)
+	weights = train(train_vectors_gsd, tag_list, MAX_EPOCH=50)
+	#weight_ser = serialisation_weight_vectors(weights)
+	#deserialisation_weight_vectors()
+	print()
 
-	"""MAX_EPOCH"""
-	#dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
-	#dev_vectors = get_vectors_from_data(dev_data)
-	#weights = train(dev_vectors, tag_list, MAX_EPOCH=5, evaluate_epochs=True, dev_vectors=dev_vectors)
-	#evaluate(weights, train_vectors, tag_list)
 
-	"""Evaluation in-domain"""
-	test_data = get_data_from_file("./fr_gsd-ud-test.conllu")
-	test_vectors = get_vectors_from_data(test_data)
-	#weights = train(test_vectors, tag_list, MAX_EPOCH=50)
-	evaluate(weights, test_vectors, tag_list)
+	"""print("Evaluating MAX_EPOCH")
+	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
+	dev_vectors = get_vectors_from_data(dev_data)
+	weights = train(dev_vectors, tag_list, MAX_EPOCH=100, evaluate_epochs=True, dev_vectors=dev_vectors)
+	print()"""
+
+
+	print("Evaluating in-domain on gsd corpus")
+	test_data_gsd = get_data_from_file("./fr_gsd-ud-test.conllu")
+	test_vectors_gsd = get_vectors_from_data(test_data_gsd)
+
+	print("On training data/known vocab")
+	decision_corpus_gsd_train = get_decision_corpus(weights, train_vectors_gsd, tag_list)
+	evaluate_accuracy(decision_corpus_gsd_train)
+
+	print("On testing data/new vocab")
+	decision_corpus_gsd_test = get_decision_corpus(weights, test_vectors_gsd, tag_list)
+	evaluate_accuracy(decision_corpus_gsd_test)
+	#get_confusion_matrix(decision_corpus_gsd_test, "evaluation in-domaine")
+	print()
 	
 	
-	"""Training hors domaine"""
-	#train_data_hd = get_data_from_file("./Eval_HorsDomaine/French_Spoken/fr_spoken-ud-train.conllu")
-	#train_data_hd = get_data_from_file("./Eval_HorsDomaine/French_SRCMF/fro_srcmf-ud-train.conllu") 
-	#train_vectors_hd = get_vectors_from_data(train_data_hd)
-	#weights_hd = train(train_vectors, tag_list, MAX_EPOCH=50)
-	#evaluate(weights, train_vectors_hd, tag_list)
+	print("Evaluating outside-domain on spoken and SRCMF corpus")
+	test_data_spoken = get_data_from_file("./Eval_HorsDomaine/French_Spoken/fr_spoken-ud-test.conllu")
+	test_vectors_spoken = get_vectors_from_data(test_data_spoken)
+	print("Spoken data")
+	decision_corpus_spoken = get_decision_corpus(weights, test_vectors_spoken, tag_list)
+	evaluate_accuracy(decision_corpus_spoken)
+	print_errors(decision_corpus_spoken)
 
-	"""Total time evaluation"""
-	print("Took "+str(int(time.time()-start_time))+" secondes") 
+	test_data_SRCMF = get_data_from_file("./Eval_HorsDomaine/French_SRCMF/fro_srcmf-ud-test.conllu")
+	test_vectors_SRCMF = get_vectors_from_data(test_data_SRCMF)
+	print("SRCMF data")
+	decision_corpus_SRCMF = get_decision_corpus(weights, test_vectors_SRCMF, tag_list)
+	evaluate_accuracy(decision_corpus_SRCMF)
+	print()
 
-	#To do : validation with MAX_EPOCH and dev_vectors
-	#To do : Evaluation Hors Domaine
-	
-	"""Notes sur l‘évaluation hors domaine (mais il est possible que je me sois embrouillée dans les donnée à prendre) :
-		J‘ai fait tourné avec :
-			comme vecteur de données : train hors-domain
-			comme vecteur de poids : weights in-domain
-			Max_EPOCH = 50
-			Résultat : 13 316 / 15 172 soit 87.7% de réussite"""
+
+	print("Took "+str(int(time.time()-start_time))+" secondes")
