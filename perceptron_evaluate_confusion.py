@@ -1,7 +1,7 @@
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib.pyplot as plt
-from perceptron_evaluate import get_decision_corpus
+from perceptron_evaluate_accuracy import get_decision_corpus
 
 def get_confusion_matrix(decision_corpus, tag_list, graph_title):
 	"""Calculates and returns a confusion matrix to analyse tagging performance. Also plots
