@@ -1,5 +1,5 @@
 import random
-from perceptron_serialise import serialise_weights
+from perceptron_serialisation import serialise_weights
 from perceptron_basics import *
 
 MAX_EPOCH = 10 #super parameter, number of times the algorithm goes through the whole corpus
