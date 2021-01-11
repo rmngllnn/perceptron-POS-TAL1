@@ -46,10 +46,32 @@ def add_weights_to_average(average, weights):
 
 
 
-def train(train_vectors, tag_list, max_epoch = MAX_EPOCH, evaluate_epochs = False, dev_vectors = False):
-	"""Creates and return the weights to score each tags and predict the best 
-	one. Weights are averaged by adding each temporary value of them to each
-	other.
+def train_one_epoch(train_vectors, tag_list):
+	"""Calculates and return the weights based on one pass through the corpus.
+
+	train_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
+	by get_vectors_from_data, to get the weights
+	tag_list: list of existing tags
+	"""
+
+	weights = {}
+	random.shuffle(train_vectors)
+
+	for word in train_vectors:
+			predicted_tag = predict_tag(word[0], weights, tag_list)
+			gold_tag = word[1]
+			if predicted_tag != gold_tag:
+				add_vector_to_weights(word[0], weights, predicted_tag, -1)
+				add_vector_to_weights(word[0], weights, gold_tag, +1)
+
+	return weights
+
+
+
+def train(train_vectors, tag_list, max_epoch=MAX_EPOCH, evaluate_epochs=False, dev_vectors=None):
+	"""Calculates and return the weights that will allow to score each tags and
+	predict the best one. Weights are averaged over several epochs.
+
 	If evaluate_epochs = True, evaluates at every epoch to find the best
 	MAX_EPOCH (up to the value given as parameter of the function).
 
@@ -57,45 +79,32 @@ def train(train_vectors, tag_list, max_epoch = MAX_EPOCH, evaluate_epochs = Fals
 	by get_vectors_from_data, to get the weights
 	tag_list: list of existing tags
 	evaluate_epochs: whether to evaluate the weights at each epoch
-	dev_vectors: same, but a separate set, to evaluate the accuracy of the 
-	weights depending on the number of epochs they were trained on
+	dev_vectors: same as train_vectors, but a separate set, to evaluate the accuracy
+	of the weights depending on the number of epochs they were trained on
 	"""
 
 	average = {}
 	if evaluate_epochs:
 		accuracy_by_epoch = {}
-		print(accuracy_by_epoch)
 		print("For MAX_EPOCH in "+str(range(0,max_epoch))+"\nn_epochs\taccuracy")
 
 	for epoch in range(0, max_epoch):
-		print("epoch: "+str(epoch+1))
-		weights = {}
-		random.shuffle(train_vectors)
-		index_word = 0
-		n_words = len(train_vectors)
-
-		for word in train_vectors:
-			index_word += 1
-			predicted_tag = predict_tag(word[0], weights, tag_list)
-			gold_tag = word[1]
-			if predicted_tag != gold_tag:
-				add_vector_to_weights(word[0], weights, predicted_tag, -1)
-				add_vector_to_weights(word[0], weights, gold_tag, +1)
+		#print("epoch: "+str(epoch+1))
+		weights = train_one_epoch(train_vectors, tag_list)
+		
 		"""In the pseudo code in the lesson, the following line is placed inside the loop above.
 		As it dramatically increased training time, we left it in the outer loop.
 		As such, it averages between each epochs instead of each word."""
 		add_weights_to_average(average, weights)
 
 		if evaluate_epochs:
-			accuracy_by_epoch[epoch] = evaluate_accuracy(get_decision_corpus(weights, dev_vectors, tag_list))
+			accuracy_by_epoch[epoch] = evaluate_accuracy(get_decision_corpus(average, dev_vectors, tag_list))
+			print(str(epoch)+"\t\t"+str(accuracy_by_epoch[epoch]))
 
 	if evaluate_epochs:
 		print("best MAX_EPOCH: "+str(max(results, key=lambda n_epochs: (accuracy_by_epoch[epoch], epoch))))
 
 	return average
-
-
-#def evaluate_
 
 
 
@@ -106,13 +115,14 @@ if "__main__" == __name__:
 	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART",
 			 "PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
-	train_data_gsd = get_data_from_file("./fr_gsd-ud-train.conllu")
-	train_vectors_gsd = get_vectors_from_data(train_data_gsd)
+	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
+	train_vectors = get_vectors_from_data(train_data)
 
-	"""
+	"""To evaluate the evolution of the accuracy as the epochs go:"""
 	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
 	dev_vectors = get_vectors_from_data(dev_data)
-	weights = train(dev_vectors, tag_list, MAX_EPOCH=50, evaluate_epochs=True, dev_vectors=dev_vectors)
+	weights = train(train_vectors, tag_list, max_epoch=50, evaluate_epochs=True, dev_vectors=dev_vectors)
+	
 	"""
-	weights = train(train_vectors_gsd, tag_list)
-	#serialise_weights(weights)
+	weights = train(train_vectors, tag_list)
+	serialise_weights(weights)"""

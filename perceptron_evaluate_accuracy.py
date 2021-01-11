@@ -19,7 +19,7 @@ def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajoute
 
 	decision_corpus = []
 	
-	print(test_vectors)
+	#print(test_vectors)
 
 	for word in test_vectors:
 		decision = {}
@@ -51,8 +51,8 @@ def get_vocabulary(words):
 
 
 def evaluate_accuracy(decision_corpus):
-	"""Calculates, prints and returns the number of good guesses. Would ideally discriminate
-	between known and unknown vocabulary.
+	"""Calculates, prints (depending) and returns the number of good guesses. Would ideally
+	discriminate between known and unknown vocabulary.
 
 	decision_corpus: list of tagging decisions, saved as dictionaries (word_vec, pred_pos,
 	gold_pos), as created/formatted by get_decision_corpus()
@@ -65,7 +65,7 @@ def evaluate_accuracy(decision_corpus):
 		if decision["gold_tag"] == decision["predicted_tag"]:
 			good_overall += 1
 
-	print("Accuracy:\t"+str(good_overall)+"/"+str(total_overall))
+	#print("Accuracy:\t"+str(good_overall)+"/"+str(total_overall))
 	return good_overall
 
 
