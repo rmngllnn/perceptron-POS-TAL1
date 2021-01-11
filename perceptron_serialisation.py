@@ -1,6 +1,7 @@
 import pickle
 
-"""This file is dealing with the serialisation of weight vectors"""
+"""This file is dealing with the serialisation of weight vectors
+   You don‘t have to run this file, the functions are used in other files"""
 
 
 def serialise_weights(weights):
@@ -26,3 +27,6 @@ def deserialise_weights():
 	data.close()
 
 	return weights
+
+
+
