@@ -1,6 +1,5 @@
-
-"""Do not launch this file."""
-
+"""Do not launch this file. It only contains the basic functions used by the other
+files."""
 
 
 def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
@@ -54,7 +53,7 @@ def get_vectors_from_data(data):
 			word_vector = get_word_vector(sentence, word_data["word"], word_data["index"])
 			to_append = (word_vector, word_data["gold_POS"])
 			vectors.append(to_append)
-			#print(vectors)
+
 	return vectors
 
 
@@ -141,3 +140,47 @@ def predict_tag(vector, weights, tag_list):
 			scores[tag] += weights_feature.get(tag,0) * vector[feature]
 
 	return max(scores, key=lambda tag: (scores[tag], tag))
+
+
+
+def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajouter in/out vocab ??
+	"""Creates and returns a list of decisions taken by the perceptron, in the
+	form of dictionaries with the following keys: word_vector, gold_tag,
+	predicted_tag.
+
+	weights: the weights to evaluate
+	test_vectors: list of tuples (vector_word, gold_POS), as created/formatted 
+	by get_vectors_from_data
+	tag_list: list of existing tags
+	"""
+
+	decision_corpus = []
+	
+	#print(test_vectors)
+
+	for word in test_vectors:
+		decision = {}
+		decision["word_vector"] = word[0]
+		decision["gold_tag"] = word[1]
+		decision["predicted_tag"] = predict_tag(decision["word_vector"], weights, tag_list)
+		
+		decision_corpus.append(decision)
+
+	return decision_corpus
+
+
+
+def get_vocabulary(words):
+	"""Creates and return a dictionary of known word vectors. Would have been used
+	to differentiate between accuracy on known and unknown words, except going through
+	the list each time took too much time.
+
+	words: list of (word_vector, gold_tag) as created/formatted by
+	get_vectors_from_data()
+	"""
+
+	vocabulary = []
+	for word in words:
+		vocabulary.append(word[0])
+
+	return vocabulary

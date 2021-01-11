@@ -1,12 +1,14 @@
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib.pyplot as plt
+
 from perceptron_basics import *
-from perceptron_evaluate_accuracy import get_decision_corpus
 from perceptron_serialisation import deserialise_weights
 
 
-"""This file is dealing with the evaluation of perceptron : matrix of confusion"""
+"""This program calculates the confusion matrix and the msot frequent confusions, using the corpus
+specified in the main function and the weights serialized by the train program.
+Edit the file path to the corpus and the name of the graph to be created in the main function."""
 
 
 
@@ -83,9 +85,22 @@ def get_most_frequent_confusions(matrix):
 
 
 
+def print_errors(decision_corpus):
+	"""Prints the incorrect decisions in order to be able to analyze them manually.
+
+	decision_corpus: list of tagging decisions, saved as dictionaries (word_vec, pred_pos,
+	gold_pos), as created/formatted by get_decision_corpus()
+	"""
+
+	for decision in decision_corpus:
+		if decision["gold_tag"] != decision["predicted_tag"]:
+			print(decision)
+
+
+
 if "__main__" == __name__:
 	"""Saves a confusion matrix graph and prints the three most frequent confusion types for the serialised
-	perceptron, for the corpus specified in the code.
+	perceptron, for the corpus specified in the code. Can also print the errors.
 	"""
 
 	weights = deserialise_weights()
@@ -98,5 +113,6 @@ if "__main__" == __name__:
 	decision_corpus = get_decision_corpus(weights, vectors, tag_list)
 
 	matrix = get_confusion_matrix(decision_corpus, tag_list, "confusion_test_SRCMF") #same
+	#print_errors(matrix)
 
 	get_most_frequent_confusions(matrix)

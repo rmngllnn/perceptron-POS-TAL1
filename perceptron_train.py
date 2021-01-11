@@ -4,9 +4,12 @@ from perceptron_basics import *
 from perceptron_evaluate_accuracy import *
 
 
-"""This file is dealing with the training of perceptron"""
+"""This file deals with training the perceptron. You can change the number of epochs
+here, or change the training corpus below in the main function, or opt to test the
+evolution of the accuracy based on the number of epochs."""
 
 MAX_EPOCH = 10 #super parameter, number of times the algorithm goes through the whole corpus
+
 
 
 def add_vector_to_weights(vector, weights, tag, factor):
@@ -115,14 +118,16 @@ if "__main__" == __name__:
 	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART",
 			 "PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
+	#Edit the file paths to change the corpus:
 	train_data = get_data_from_file("./fr_gsd-ud-train.conllu")
 	train_vectors = get_vectors_from_data(train_data)
 
-	"""To evaluate the evolution of the accuracy as the epochs go:"""
-	dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
+	#To evaluate the evolution of the accuracy as the epochs go:
+	"""dev_data = get_data_from_file("./fr_gsd-ud-dev.conllu")
 	dev_vectors = get_vectors_from_data(dev_data)
 	weights = train(train_vectors, tag_list, max_epoch=50, evaluate_epochs=True, dev_vectors=dev_vectors)
-	
 	"""
+
+	#To calculate new weights:
 	weights = train(train_vectors, tag_list)
-	serialise_weights(weights)"""
+	serialise_weights(weights)
