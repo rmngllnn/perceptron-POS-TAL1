@@ -77,7 +77,8 @@ def print_errors(decision_corpus):
 
 	for decision in decision_corpus:
 		if decision["gold_tag"] != decision["predicted_tag"]:
-			print(decision)
+			print(decision["word_vector"][0], "predicted tag is ", decision["predicted_tag"], " whereas gold tag is ", decision["gold_tag"])
+			#print(decision)
 
 
 
@@ -102,7 +103,6 @@ if "__main__" == __name__:
 	test_vectors_gsd = get_vectors_from_data(test_data_gsd)
 	decision_corpus_gsd_test = get_decision_corpus(weights, test_vectors_gsd, tag_list)
 	evaluate_accuracy(decision_corpus_gsd_test)
-	#get_confusion_matrix(decision_corpus_gsd_test, "evaluation in-domaine")
 	print()
 	
 	

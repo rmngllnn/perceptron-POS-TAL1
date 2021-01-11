@@ -1,7 +1,10 @@
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib.pyplot as plt
+from perceptron_basics import *
 from perceptron_evaluate_accuracy import get_decision_corpus
+from perceptron_serialisation import deserialise_weights
+
 
 """This file is dealing with the evaluation of perceptron : matrix of confusion"""
 
@@ -90,10 +93,10 @@ if "__main__" == __name__:
 	tag_list = ["ADJ","ADP","ADV","AUX","CCONJ","DET","INTJ","NOUN","NUM","PART",
 			 "PRON","PROPN","PUNCT","SCONJ","SYM","VERB","X"]
 
-	data = get_data_from_file("./fr_gsd-ud-test.conllu") #to change depending on the preferred corpus
+	data = get_data_from_file("./Eval_HorsDomaine/French_SRCMF/fro_srcmf-ud-test.conllu") #to change depending on the preferred corpus
 	vectors = get_vectors_from_data(data)
 	decision_corpus = get_decision_corpus(weights, vectors, tag_list)
 
-	matrix = get_confusion_matrix(decision_corpus, tag_list, "confusions sur le corpus gsd eval") #same
+	matrix = get_confusion_matrix(decision_corpus, tag_list, "confusion_test_SRCMF") #same
 
 	get_most_frequent_confusions(matrix)
