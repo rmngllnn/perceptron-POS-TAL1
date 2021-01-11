@@ -18,6 +18,8 @@ def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajoute
 	"""
 
 	decision_corpus = []
+	
+	print(test_vectors)
 
 	for word in test_vectors:
 		decision = {}

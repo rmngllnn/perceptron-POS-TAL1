@@ -1,6 +1,7 @@
 import random
 from perceptron_serialisation import serialise_weights
 from perceptron_basics import *
+from perceptron_evaluate_accuracy import *
 
 
 """This file is dealing with the training of perceptron"""
@@ -45,7 +46,7 @@ def add_weights_to_average(average, weights):
 
 
 
-def train(train_vectors, tag_list, max_epoch = MAX_EPOCH, evaluate_epochs = False, dev_vectors = None):
+def train(train_vectors, tag_list, max_epoch = MAX_EPOCH, evaluate_epochs = False, dev_vectors = False):
 	"""Creates and return the weights to score each tags and predict the best 
 	one. Weights are averaged by adding each temporary value of them to each
 	other.
@@ -63,6 +64,7 @@ def train(train_vectors, tag_list, max_epoch = MAX_EPOCH, evaluate_epochs = Fals
 	average = {}
 	if evaluate_epochs:
 		accuracy_by_epoch = {}
+		print(accuracy_by_epoch)
 		print("For MAX_EPOCH in "+str(range(0,max_epoch))+"\nn_epochs\taccuracy")
 
 	for epoch in range(0, max_epoch):
@@ -93,6 +95,9 @@ def train(train_vectors, tag_list, max_epoch = MAX_EPOCH, evaluate_epochs = Fals
 	return average
 
 
+#def evaluate_
+
+
 
 if "__main__" == __name__:
 	"""Creates, trains and saves an averaged POS-tagging perceptron.
@@ -109,6 +114,5 @@ if "__main__" == __name__:
 	dev_vectors = get_vectors_from_data(dev_data)
 	weights = train(dev_vectors, tag_list, MAX_EPOCH=50, evaluate_epochs=True, dev_vectors=dev_vectors)
 	"""
-
 	weights = train(train_vectors_gsd, tag_list)
-	serialise_weights(weights)
+	#serialise_weights(weights)
