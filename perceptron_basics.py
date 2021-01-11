@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """Do not launch this file. It only contains the basic functions used by the other
 files."""
 
@@ -76,7 +79,6 @@ def get_word_vector(sentence, word, index):
 
 	vector["word="+word] = 1
 
-
 	if index == 0:
 		vector["is_first"] = 1
 	else:
@@ -86,13 +88,11 @@ def get_word_vector(sentence, word, index):
 		vector["is_last"] = 1
 	else:
 		vector["word+1="+sentence[index+1]] = 1
-		
-
+	
 	if word[0].isupper():
 		vector["is_capitalized"] = 1
 	if word.isupper():
         	vector["is_uppercase"] = 1
-
 
 	if len_word == 1:
 		vector["len=1"] = 1
@@ -102,7 +102,6 @@ def get_word_vector(sentence, word, index):
 		vector["len=3"] = 1
 	else:
 		vector["len>3"] = 1
-
 
 	if len_word > 0:
 		vector["prefix1="+word[0:1]] = 1
@@ -116,7 +115,6 @@ def get_word_vector(sentence, word, index):
 	if len_word > 3:
 		vector["prefix3="+word[0:4]] = 1
 		vector["suffix3="+word[-4::]] = 1
-
 
 	return vector
 
@@ -143,7 +141,7 @@ def predict_tag(vector, weights, tag_list):
 
 
 
-def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajouter in/out vocab ??
+def get_decision_corpus(weights, test_vectors, tag_list):
 	"""Creates and returns a list of decisions taken by the perceptron, in the
 	form of dictionaries with the following keys: word_vector, gold_tag,
 	predicted_tag.
@@ -155,8 +153,6 @@ def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajoute
 	"""
 
 	decision_corpus = []
-	
-	#print(test_vectors)
 
 	for word in test_vectors:
 		decision = {}
@@ -180,6 +176,7 @@ def get_vocabulary(words):
 	"""
 
 	vocabulary = []
+	
 	for word in words:
 		vocabulary.append(word[0])
 

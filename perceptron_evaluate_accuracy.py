@@ -22,7 +22,8 @@ def evaluate_accuracy(decision_corpus):
 		if decision["gold_tag"] == decision["predicted_tag"]:
 			good_overall += 1
 
-	print("Accuracy:\t"+str(good_overall)+"/"+str(total_overall))
+	print("Accuracy:\t" + str(good_overall) + "/" + str(total_overall))
+	
 	return good_overall
 
 

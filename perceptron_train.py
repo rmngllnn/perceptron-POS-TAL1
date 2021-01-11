@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import random
 from perceptron_serialisation import serialise_weights
 from perceptron_basics import *
@@ -102,10 +105,10 @@ def train(train_vectors, tag_list, max_epoch=MAX_EPOCH, evaluate_epochs=False, d
 
 		if evaluate_epochs:
 			accuracy_by_epoch[epoch] = evaluate_accuracy(get_decision_corpus(average, dev_vectors, tag_list))
-			print(str(epoch)+"\t\t"+str(accuracy_by_epoch[epoch]))
+			print(str(epoch)+"\t\t" + str(accuracy_by_epoch[epoch]))
 
 	if evaluate_epochs:
-		print("best MAX_EPOCH: "+str(max(results, key=lambda n_epochs: (accuracy_by_epoch[epoch], epoch))))
+		print("best MAX_EPOCH: " + str(max(results, key=lambda n_epochs: (accuracy_by_epoch[epoch], epoch))))
 
 	return average
 

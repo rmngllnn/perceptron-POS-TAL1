@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib.pyplot as plt
@@ -70,7 +73,7 @@ def get_most_frequent_confusions(matrix):
 	matrix : confusion matrix, as calculated by matrix_confusion()
 	"""
 
-	list_freq= []
+	list_freq = []
 
 	for i in range(len(matrix)):
 		for j in range(len(matrix)):

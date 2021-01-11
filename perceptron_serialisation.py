@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import pickle
 
 """This file is dealing with the serialisation of weight vectors
@@ -15,7 +18,6 @@ def serialise_weights(weights):
 	file = open(file_name, "wb")
 	pickle.dump(weights, file)
 	file.close()
-
 
 
 def deserialise_weights():
