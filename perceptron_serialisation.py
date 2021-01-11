@@ -1,5 +1,8 @@
 import pickle
 
+"""This file is dealing with the serialisation of weight vectors"""
+
+
 def serialise_weights(weights):
 	"""Saves the weights in a pickle file to prevent from having to
 	retrain the perceptron every single time.

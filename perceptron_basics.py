@@ -1,3 +1,8 @@
+
+"""Do not launch this file."""
+
+
+
 def get_data_from_file(file = "./fr_gsd-ud-train.conllu"):
 	"""Extracts and returns the data from a conllu file. Formats them in 
 	a list of lists (sentences) of dictionnaries (words).

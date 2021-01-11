@@ -3,6 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from perceptron_evaluate_accuracy import get_decision_corpus
 
+"""This file is dealing with the evaluation of perceptron : matrix of confusion"""
+
+
+
 def get_confusion_matrix(decision_corpus, tag_list, graph_title):
 	"""Calculates and returns a confusion matrix to analyse tagging performance. Also plots
 	and saves it using plot_and_save_confusion_matrix().

@@ -3,6 +3,9 @@
 from perceptron_basics import *
 from perceptron_serialisation import deserialise_weights
 
+"""This file is dealing with the accuracy evaluation of perceptron"""
+
+
 def get_decision_corpus(weights, test_vectors, tag_list): #RAF comment/si ajouter in/out vocab ??
 	"""Creates and returns a list of decisions taken by the perceptron, in the
 	form of dictionaries with the following keys: word_vector, gold_tag,

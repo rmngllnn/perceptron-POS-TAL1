@@ -2,6 +2,9 @@ import random
 from perceptron_serialisation import serialise_weights
 from perceptron_basics import *
 
+
+"""This file is dealing with the training of perceptron"""
+
 MAX_EPOCH = 10 #super parameter, number of times the algorithm goes through the whole corpus
 
 
