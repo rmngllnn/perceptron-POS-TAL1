@@ -77,8 +77,7 @@ def print_errors(decision_corpus):
 
 	for decision in decision_corpus:
 		if decision["gold_tag"] != decision["predicted_tag"]:
-			print(decision["word_vector"][0], "predicted tag is ", decision["predicted_tag"], " whereas gold tag is ", decision["gold_tag"])
-			#print(decision)
+			print(decision)
 
 
 
