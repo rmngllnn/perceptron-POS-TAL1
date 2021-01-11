@@ -113,8 +113,8 @@ def get_word_vector(sentence, word, index):
 		vector["prefix3="+word[0:3]] = 1
 		vector["suffix3="+word[-3::]] = 1
 	if len_word > 3:
-		vector["prefix3="+word[0:4]] = 1
-		vector["suffix3="+word[-4::]] = 1
+		vector["prefix4="+word[0:4]] = 1
+		vector["suffix4="+word[-4::]] = 1
 
 	return vector
 
