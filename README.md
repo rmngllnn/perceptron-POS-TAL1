@@ -9,6 +9,3 @@ Pour créer une matrice de confusion et obtenir un heatmap, entrez la ligne de c
 
 Actuellement, le perceptron est entrainé sur le corpus train de GSD, il évalue la précision sur GSD, Spoken et Old French, et il construit la matrice de confusion sur les données test de Old French.
 Si vous voulez changer de fichier, il faut éditer le code dans le fichier `perceptron_train.py`, `perceptron_evaluate_accuracy.py` et perceptron_evaluate_confusion.py
-
-
-Tous les fichiers sont disponibles à cette adresse : https://github.com/CGuitel/perceptron-POS-TAL1
